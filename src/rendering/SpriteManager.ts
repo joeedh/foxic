@@ -18,6 +18,8 @@ function buildSheetData(
   rows: number,
   frameNames: string[],
   animations?: Record<string, string[]>,
+  // shrink sprite to eliminate border
+  border=0
 ): SpritesheetData {
   const fw = Math.floor(width / cols)
   const fh = Math.floor(height / rows)
@@ -27,9 +29,23 @@ function buildSheetData(
     for (let col = 0; col < cols; col++) {
       const idx = row * cols + col
       if (idx >= frameNames.length) break
+      const n = 0
       frames[frameNames[idx]] = {
-        frame: { x: col * fw, y: row * fh, w: fw, h: fh },
-        //borders: { left: 35, top: 35, right: 35, bottom: 35 },
+        //frame: { x: col * fw, y: row * fh, w: fw, h: fh },
+        frame: {
+          x: col * fw+n,
+          y: row * fh+n,
+          w: fw - 2 * n,
+          h: fh - 2 * n,
+        },
+        trimmed: false,
+        spriteSourceSize: {
+          x: col * fw+n,
+          y: row * fh+n,
+          w: fw - 2 * n,
+          h: fh - 2 * n,
+        },
+        //borders: { left: 4, top: 4, right: 4, bottom: 4 },
       }
     }
   }
@@ -238,10 +254,7 @@ export function getTileTexture(
   tileId: number,
   tileset: string,
 ): Texture | null {
-  const sheet = tileSheets[tileset]
-  if (!sheet) return null
-  const tex = sheet.textures[`tile_${tileId}`]
-  return tex ?? null
+  return tileSheets[tileset]?.textures[`tile_${tileId}`] ?? null 
 }
 
 /** Check if a tileset has been loaded */

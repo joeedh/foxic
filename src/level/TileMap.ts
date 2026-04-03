@@ -1,4 +1,4 @@
-import { Container, Sprite } from "pixi.js"
+import { Container, Rectangle, Sprite } from "pixi.js"
 import { TILE_SIZE } from "../constants"
 import { getTileType, getTileHeight, type TileType } from "./Tile"
 import { getTileTexture } from "../rendering/SpriteManager"
@@ -11,6 +11,7 @@ export class TileMap {
   private grid: number[][]
   container: Container
   private tileset: string
+  private sprites: Sprite[] = []
 
   constructor(grid: number[][], tileset: string = "greenhill") {
     this.grid = grid
@@ -23,7 +24,14 @@ export class TileMap {
     this.buildSprites()
   }
 
+  public rebuildSprites() {
+    this.buildSprites()
+  }
+  
   private buildSprites() {
+    this.sprites.forEach(sprite => sprite.removeFromParent())
+    this.sprites.length = 0
+
     for (let row = 0; row < this.height; row++) {
       for (let col = 0; col < this.width; col++) {
         const id = this.grid[row][col]
@@ -38,6 +46,7 @@ export class TileMap {
         sprite.width = TILE_SIZE
         sprite.height = TILE_SIZE
         this.container.addChild(sprite)
+        this.sprites.push(sprite)
       }
     }
   }
