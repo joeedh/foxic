@@ -1,10 +1,10 @@
-import { type PhysicsState } from "./SonicPhysics";
+import { type PhysicsState } from "./SonicPhysics"
 
 export interface AABB {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export function aabbOverlap(a: AABB, b: AABB): boolean {
@@ -13,7 +13,7 @@ export function aabbOverlap(a: AABB, b: AABB): boolean {
     a.x + a.width > b.x &&
     a.y < b.y + b.height &&
     a.y + a.height > b.y
-  );
+  )
 }
 
 export function playerAABB(
@@ -26,5 +26,5 @@ export function playerAABB(
     y: state.y,
     width,
     height,
-  };
+  }
 }

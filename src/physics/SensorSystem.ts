@@ -1,21 +1,21 @@
-import { TileMap } from "../level/TileMap";
-import { PLAYER_RADIUS } from "../constants";
+import { TileMap } from "../level/TileMap"
+import { PLAYER_RADIUS } from "../constants"
 
 export interface SensorResult {
-  hit: boolean;
-  distance: number;
-  surfaceY: number;
-  angle: number;
+  hit: boolean
+  distance: number
+  surfaceY: number
+  angle: number
 }
 
 export interface WallSensorResult {
-  hit: boolean;
-  wallX: number;
+  hit: boolean
+  wallX: number
 }
 
 export interface CeilingSensorResult {
-  hit: boolean;
-  ceilingY: number;
+  hit: boolean
+  ceilingY: number
 }
 
 export class SensorSystem {
@@ -26,12 +26,12 @@ export class SensorSystem {
    * Returns the distance to ground and the surface angle.
    */
   castFloorSensor(x: number, y: number, maxDist: number = 32): SensorResult {
-    const ground = this.tileMap.getGroundHeight(x, y, maxDist);
+    const ground = this.tileMap.getGroundHeight(x, y, maxDist)
     if (ground === null) {
-      return { hit: false, distance: maxDist, surfaceY: y + maxDist, angle: 0 };
+      return { hit: false, distance: maxDist, surfaceY: y + maxDist, angle: 0 }
     }
-    const distance = ground.y - y;
-    return { hit: true, distance, surfaceY: ground.y, angle: ground.angle };
+    const distance = ground.y - y
+    return { hit: true, distance, surfaceY: ground.y, angle: ground.angle }
   }
 
   /**
@@ -47,12 +47,12 @@ export class SensorSystem {
       centerX - PLAYER_RADIUS,
       bottomY,
       maxDist,
-    );
+    )
     const sensorB = this.castFloorSensor(
       centerX + PLAYER_RADIUS,
       bottomY,
       maxDist,
-    );
+    )
 
     // Use the sensor that found closer ground
     if (!sensorA.hit && !sensorB.hit) {
@@ -61,24 +61,24 @@ export class SensorSystem {
         distance: maxDist,
         surfaceY: bottomY + maxDist,
         angle: 0,
-      };
+      }
     }
 
-    if (!sensorA.hit) return sensorB;
-    if (!sensorB.hit) return sensorA;
+    if (!sensorA.hit) return sensorB
+    if (!sensorB.hit) return sensorA
 
     // Both hit: use the one with the higher (closer) surface
     if (sensorA.surfaceY <= sensorB.surfaceY) {
       // Compute angle from both sensors
-      const dx = PLAYER_RADIUS * 2;
-      const dy = sensorB.surfaceY - sensorA.surfaceY;
-      const angle = Math.atan2(dy, dx);
-      return { ...sensorA, angle };
+      const dx = PLAYER_RADIUS * 2
+      const dy = sensorB.surfaceY - sensorA.surfaceY
+      const angle = Math.atan2(dy, dx)
+      return { ...sensorA, angle }
     } else {
-      const dx = PLAYER_RADIUS * 2;
-      const dy = sensorB.surfaceY - sensorA.surfaceY;
-      const angle = Math.atan2(dy, dx);
-      return { ...sensorB, angle };
+      const dx = PLAYER_RADIUS * 2
+      const dy = sensorB.surfaceY - sensorA.surfaceY
+      const angle = Math.atan2(dy, dx)
+      return { ...sensorB, angle }
     }
   }
 
@@ -91,27 +91,27 @@ export class SensorSystem {
     direction: -1 | 1,
     reach: number = PLAYER_RADIUS + 2,
   ): WallSensorResult {
-    const checkX = x + direction * reach;
-    const wall = this.tileMap.getWall(checkX, y, direction);
+    const checkX = x + direction * reach
+    const wall = this.tileMap.getWall(checkX, y, direction)
     if (wall !== null) {
-      return { hit: true, wallX: wall };
+      return { hit: true, wallX: wall }
     }
-    return { hit: false, wallX: checkX };
+    return { hit: false, wallX: checkX }
   }
 
   /**
    * Cast ceiling sensors E and F.
    */
   castCeilingSensor(x: number, topY: number): CeilingSensorResult {
-    const left = this.tileMap.getCeiling(x - PLAYER_RADIUS, topY);
-    const right = this.tileMap.getCeiling(x + PLAYER_RADIUS, topY);
+    const left = this.tileMap.getCeiling(x - PLAYER_RADIUS, topY)
+    const right = this.tileMap.getCeiling(x + PLAYER_RADIUS, topY)
 
     if (left !== null) {
-      return { hit: true, ceilingY: left };
+      return { hit: true, ceilingY: left }
     }
     if (right !== null) {
-      return { hit: true, ceilingY: right };
+      return { hit: true, ceilingY: right }
     }
-    return { hit: false, ceilingY: topY };
+    return { hit: false, ceilingY: topY }
   }
 }

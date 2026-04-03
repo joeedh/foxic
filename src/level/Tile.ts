@@ -1,25 +1,25 @@
-import { TILE_SIZE } from "../constants";
+import { TILE_SIZE } from "../constants"
 
 export interface TileType {
-  id: number;
-  solid: boolean;
-  heights: number[]; // 16 values: solid height per column from bottom
-  angle: number; // surface angle in radians (0 = flat)
-  color: number; // debug render color
+  id: number
+  solid: boolean
+  heights: number[] // 16 values: solid height per column from bottom
+  angle: number // surface angle in radians (0 = flat)
+  color: number // debug render color
 }
 
 function flatHeights(h: number): number[] {
-  return Array(TILE_SIZE).fill(h);
+  return Array(TILE_SIZE).fill(h)
 }
 
 function slopeHeights(fromLeft: number, toRight: number): number[] {
-  const heights: number[] = [];
+  const heights: number[] = []
   for (let i = 0; i < TILE_SIZE; i++) {
     heights.push(
       Math.round(fromLeft + ((toRight - fromLeft) * i) / (TILE_SIZE - 1)),
-    );
+    )
   }
-  return heights;
+  return heights
 }
 
 // Tile type registry
@@ -94,13 +94,13 @@ export const TILES: Record<number, TileType> = {
     angle: 0,
     color: 0x696969,
   }, // half-height platform
-};
+}
 
 export function getTileType(id: number): TileType {
-  return TILES[id] ?? TILES[0];
+  return TILES[id] ?? TILES[0]
 }
 
 export function getTileHeight(tile: TileType, column: number): number {
-  const col = Math.max(0, Math.min(TILE_SIZE - 1, Math.floor(column)));
-  return tile.heights[col];
+  const col = Math.max(0, Math.min(TILE_SIZE - 1, Math.floor(column)))
+  return tile.heights[col]
 }
