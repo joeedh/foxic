@@ -1,1 +1,6 @@
-{}
+{
+  "devDependencies": {
+    "mcp-image": "^0.10.0"
+  },
+  "type": "module"
+}

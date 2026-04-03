@@ -1,0 +1,20 @@
+diff --git a/dist/index.js b/dist/index.js
+index e88108d5b10382a65a9e350bb46ef3804367095e..d3da534a54da76f37c89cc93f83be83ed98e4309 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -7,13 +7,13 @@
+  * - (default)       → MCP server startup
+  */
+ import { dirname, resolve } from 'node:path';
+-import { fileURLToPath } from 'node:url';
++import { fileURLToPath, pathToFileURL } from 'node:url';
+ const __filename = fileURLToPath(import.meta.url);
+ const __dirname = dirname(__filename);
+ const args = process.argv.slice(2);
+ if (args[0] === 'skills') {
+     if (args[1] === 'install') {
+-        const { run } = await import(resolve(__dirname, '..', 'bin', 'install-skills.js'));
++        const { run } = await import(pathToFileURL(resolve(__dirname, '..', 'bin', 'install-skills.js')));
+         run(args.slice(2));
+         process.exit(0);
+     }
