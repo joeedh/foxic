@@ -1,3 +1,7 @@
+# Project Index
+
+* The project index (an overview of the project) lives in documentation/ProjectIndex.md
+
 # Code Style
 
 * Code should be in TypeScript and HTML
