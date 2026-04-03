@@ -22,7 +22,7 @@
 
 - **`main.ts`** — Entry point, PixiJS init, asset loading, scene setup
 - **`constants.ts`** — All physics tuning values
-- **`input.ts`** — Keyboard input with 4-frame buffering
+- **`input.ts`** — Keyboard input with configurable press buffering
 - **`camera.ts`** — Sonic-style camera with speed-based lookahead
 
 ### Core
