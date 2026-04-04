@@ -6,7 +6,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format": "prettier --write src/ index.html",
-    "playwright": "npx playwright test"
+    "playwright": "npx playwright test",
+    "typecheck": "npx tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",
