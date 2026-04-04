@@ -1,7 +1,7 @@
-import type { GLTexture } from './WebGLRenderer'
+import type { Texture } from "./WebGL/texture"
 
 export interface Frame {
-  texture: GLTexture
+  texture: Texture
   u0: number
   v0: number
   u1: number
@@ -20,7 +20,7 @@ export class SpriteSheet {
   frames: Record<string, Frame> = {}
   animations: Record<string, Frame[]> = {}
 
-  constructor(texture: GLTexture, def: SheetDef) {
+  constructor(texture: Texture, def: SheetDef) {
     const { cols, rows, frameNames } = def
 
     const p = def.borderTrim ?? 0

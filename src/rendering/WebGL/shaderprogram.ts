@@ -54,14 +54,37 @@ export const AttrType = Object.fromEntries(
   ),
 ) as unknown as typeof GLType
 
-export type UniformTypeDef<T extends GLType = GLType> = { type: T; default: T }
+/** Maps a GLType constant to its corresponding JavaScript value type. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UniformValueFor<T extends GLType> = T extends typeof GLType.Vec2
+  ? readonly number[] | Float32Array
+  : T extends typeof GLType.Vec3
+    ? readonly number[] | Float32Array
+    : T extends typeof GLType.Vec4
+      ? readonly number[] | Float32Array
+      : T extends typeof GLType.Mat2
+        ? Float32Array
+        : T extends typeof GLType.Mat3
+          ? Float32Array
+          : T extends typeof GLType.Mat4
+            ? Float32Array
+            : T extends typeof GLType.Sampler2D
+              ? number | Texture
+              : T extends typeof GLType.Sampler3D
+                ? number | Texture
+                : number
+
+export type UniformTypeDef<T extends GLType = GLType> = {
+  type: T
+  default: UniformValueFor<T>
+}
 export type AttrTypeDef = {
   type: AttrType
   target?: VertexArrayTarget
   size: number
 }
 export type UniformSet<SDEF extends IShaderDef> = Partial<
-  UniformsFromDef<SDEF['uniforms']>
+  UniformsFromDef<SDEF["uniforms"]>
 >
 
 /** definition of shader uniforms */
@@ -74,7 +97,7 @@ export type AttrBlock = { [k: string]: AttrTypeDef }
  * if a member is 'defineOnly' it should produce `#define KEY` only,
  * otherwise it should do `#define KEY VALUE`
  */
-export type MacroDefinesBlock = { [key: string]: string | 'defineOnly' }
+export type MacroDefinesBlock = { [key: string]: string | "defineOnly" }
 
 /** note: all shaders are required to be glsl 300 */
 export interface IShaderDef<
@@ -88,7 +111,7 @@ export interface IShaderDef<
 }
 
 export type UniformsFromDef<T extends UniformBlock> = {
-  [k in keyof T]: T[k]['default']
+  [k in keyof T]: UniformValueFor<T[k]["type"]>
 }
 
 /** Maps a GLType to the corresponding WebGL enum constant. */

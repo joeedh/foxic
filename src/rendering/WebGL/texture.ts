@@ -26,6 +26,44 @@ export class Texture {
     this.textureGL = undefined
   }
 
+  /** Allocate an empty RGBA texture — used for render targets (FBOs). */
+  allocate(
+    gl: WebGL2RenderingContext,
+    width: number,
+    height: number,
+  ): void {
+    this.ensureTexture(gl)
+    gl.bindTexture(gl.TEXTURE_2D, this.glTexture!)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      width,
+      height,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null,
+    )
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    this.width = width
+    this.height = height
+  }
+
+  /** Attach this texture as the color attachment of the current framebuffer. */
+  attachToFramebuffer(gl: WebGL2RenderingContext): void {
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      this.glTexture!,
+      0,
+    )
+  }
+
   uploadBuffer(
     gl: WebGL2RenderingContext,
     type: typeof gl.FLOAT | typeof gl.UNSIGNED_BYTE,
@@ -61,14 +99,16 @@ export class Texture {
   uploadMedia(
     gl: WebGL2RenderingContext,
     media: HTMLCanvasElement | HTMLVideoElement | HTMLImageElement,
+    opts?: { filter?: "linear" | "nearest" },
   ) {
     this.ensureTexture(gl)
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture!)
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, media)
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+    const filter = opts?.filter === "linear" ? gl.LINEAR : gl.NEAREST
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
