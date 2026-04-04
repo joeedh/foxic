@@ -1,5 +1,6 @@
 import type { WebGLRenderer, GLTexture } from "./WebGLRenderer"
 import { SpriteSheet, type Frame } from "./SpriteSheet"
+import { getAssetPath } from "./GenerativeAsset"
 
 let playerSheet: SpriteSheet
 let enemiesSheet: SpriteSheet
@@ -25,9 +26,9 @@ function createCircleTexture(renderer: WebGLRenderer): GLTexture {
 export async function loadAllAssets(renderer: WebGLRenderer) {
   // Load sprite textures and bake chroma key (magenta -> alpha)
   const [playerTexRaw, enemiesTexRaw, itemsTexRaw] = await Promise.all([
-    renderer.loadTexture("/assets/sprites/player_spritesheet.jpg"),
-    renderer.loadTexture("/assets/sprites/enemies_spritesheet.jpg"),
-    renderer.loadTexture("/assets/sprites/items_spritesheet.jpg"),
+    renderer.loadTexture(getAssetPath("player_spritesheet")),
+    renderer.loadTexture(getAssetPath("enemies_spritesheet")),
+    renderer.loadTexture(getAssetPath("items_spritesheet")),
   ])
 
   const playerTex = renderer.bakeChromaKey(playerTexRaw)
@@ -87,8 +88,8 @@ export async function loadAllAssets(renderer: WebGLRenderer) {
 
   // Load backgrounds (no chroma key needed)
   const [bgGreenhill, bgIndustrial] = await Promise.all([
-    renderer.loadTexture("/assets/backgrounds/bg_greenhill.jpg"),
-    renderer.loadTexture("/assets/backgrounds/bg_industrial.jpg"),
+    renderer.loadTexture(getAssetPath("bg_greenhill")),
+    renderer.loadTexture(getAssetPath("bg_industrial")),
   ])
   backgroundTextures.greenhill = bgGreenhill
   backgroundTextures.industrial = bgIndustrial
@@ -108,8 +109,8 @@ export async function loadAllAssets(renderer: WebGLRenderer) {
   ]
 
   const [tileGreenhillTex, tileIndustrialTex] = await Promise.all([
-    renderer.loadTexture("/assets/tiles/tileset_greenhill.jpg"),
-    renderer.loadTexture("/assets/tiles/tileset_industrial.jpg"),
+    renderer.loadTexture(getAssetPath("tileset_greenhill")),
+    renderer.loadTexture(getAssetPath("tileset_industrial")),
   ])
 
   tileSheets["greenhill"] = new SpriteSheet(tileGreenhillTex, {
