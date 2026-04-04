@@ -1,6 +1,6 @@
-import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getRingFrame, getCircleTexture } from "../rendering/AssetLoader"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import type { GameEntity, CollisionResult } from '../level/LevelLoader'
+import { getRingFrame, getCircleTexture } from '../rendering/AssetLoader'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export class Ring implements GameEntity {
   x: number

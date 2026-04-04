@@ -1,4 +1,4 @@
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export interface Scene {
   enter(): void

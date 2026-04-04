@@ -159,32 +159,32 @@ export function createLevel1(): LevelDefinition {
   const entities: EntitySpawn[] = [
     // Rings
     ...Array.from({ length: 5 }, (_, i) => ({
-      type: "ring",
+      type: 'ring',
       x: (35 + i * 2) * 16 + 8,
       y: 24 * 16,
     })),
     ...Array.from({ length: 8 }, (_, i) => ({
-      type: "ring",
+      type: 'ring',
       x: (53 + i * 0.5) * 16 + 8,
       y: 21 * 16,
     })),
     ...Array.from({ length: 3 }, (_, i) => ({
-      type: "ring",
+      type: 'ring',
       x: (70 + i) * 16 + 8,
       y: 19 * 16,
     })),
     // Enemies
-    { type: "crab", x: 45 * 16, y: 25 * 16 },
-    { type: "crab", x: 75 * 16, y: 25 * 16 },
-    { type: "bee", x: 65 * 16, y: 20 * 16 },
-    { type: "bee", x: 100 * 16, y: 20 * 16 },
+    { type: 'crab', x: 45 * 16, y: 25 * 16 },
+    { type: 'crab', x: 75 * 16, y: 25 * 16 },
+    { type: 'bee', x: 65 * 16, y: 20 * 16 },
+    { type: 'bee', x: 100 * 16, y: 20 * 16 },
     // Springs
-    { type: "spring", x: 88 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
-    { type: "spring", x: 130 * 16 + 8, y: 25 * 16, properties: { force: -12 } },
+    { type: 'spring', x: 88 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
+    { type: 'spring', x: 130 * 16 + 8, y: 25 * 16, properties: { force: -12 } },
   ]
 
   return {
-    name: "Green Hill",
+    name: 'Green Hill',
     width: W,
     height: H,
     tileGrid: grid,
@@ -293,30 +293,30 @@ export function createLevel2(): LevelDefinition {
   const entities: EntitySpawn[] = [
     // Rings along elevated corridor
     ...Array.from({ length: 10 }, (_, i) => ({
-      type: "ring",
+      type: 'ring',
       x: (28 + i * 2) * 16 + 8,
       y: 19 * 16,
     })),
     // Rings on floating platforms
     ...Array.from({ length: 3 }, (_, i) => ({
-      type: "ring",
+      type: 'ring',
       x: (94 + i) * 16 + 8,
       y: 17 * 16,
     })),
     // Enemies
-    { type: "crab", x: 35 * 16, y: 20 * 16 },
-    { type: "crab", x: 130 * 16, y: 25 * 16 },
-    { type: "crab", x: 145 * 16, y: 25 * 16 },
-    { type: "bee", x: 85 * 16, y: 18 * 16 },
-    { type: "bee", x: 95 * 16, y: 16 * 16 },
+    { type: 'crab', x: 35 * 16, y: 20 * 16 },
+    { type: 'crab', x: 130 * 16, y: 25 * 16 },
+    { type: 'crab', x: 145 * 16, y: 25 * 16 },
+    { type: 'bee', x: 85 * 16, y: 18 * 16 },
+    { type: 'bee', x: 95 * 16, y: 16 * 16 },
     // Springs
-    { type: "spring", x: 49 * 16 + 8, y: 25 * 16, properties: { force: -12 } },
-    { type: "spring", x: 103 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
-    { type: "spring", x: 112 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
+    { type: 'spring', x: 49 * 16 + 8, y: 25 * 16, properties: { force: -12 } },
+    { type: 'spring', x: 103 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
+    { type: 'spring', x: 112 * 16 + 8, y: 25 * 16, properties: { force: -10 } },
   ]
 
   return {
-    name: "Mechanical Plant",
+    name: 'Mechanical Plant',
     width: W,
     height: H,
     tileGrid: grid,

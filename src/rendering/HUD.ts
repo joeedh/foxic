@@ -1,22 +1,22 @@
-import type { WebGLRenderer } from "./WebGLRenderer"
-import { TextRenderer, type TextStyleDef } from "./TextRenderer"
+import type { WebGLRenderer } from './WebGLRenderer'
+import { TextRenderer, type TextStyleDef } from './TextRenderer'
 
 const hudStyle: TextStyleDef = {
-  fontFamily: "monospace",
+  fontFamily: 'monospace',
   fontSize: 16,
-  fill: "#ffffff",
-  fontWeight: "bold",
-  stroke: "#000000",
+  fill: '#ffffff',
+  fontWeight: 'bold',
+  stroke: '#000000',
   strokeWidth: 3,
 }
 
 export class HUD {
   private textRenderer: TextRenderer
   private startTime = 0
-  private scoreStr = "SCORE: 0"
-  private ringsStr = "RINGS: 0"
-  private timeStr = "TIME: 0:00"
-  private levelStr = ""
+  private scoreStr = 'SCORE: 0'
+  private ringsStr = 'RINGS: 0'
+  private timeStr = 'TIME: 0:00'
+  private levelStr = ''
 
   constructor(renderer: WebGLRenderer) {
     this.textRenderer = new TextRenderer(renderer)
@@ -35,7 +35,7 @@ export class HUD {
     const elapsed = Math.floor((performance.now() - this.startTime) / 1000)
     const mins = Math.floor(elapsed / 60)
     const secs = elapsed % 60
-    this.timeStr = `TIME: ${mins}:${secs.toString().padStart(2, "0")}`
+    this.timeStr = `TIME: ${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   render(_renderer: WebGLRenderer) {

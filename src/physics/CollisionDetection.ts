@@ -1,4 +1,4 @@
-import { type PhysicsState } from "./SonicPhysics"
+import { type PhysicsState } from './SonicPhysics'
 
 export interface AABB {
   x: number

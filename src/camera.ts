@@ -1,4 +1,4 @@
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from "./constants"
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from './constants'
 
 export class Camera {
   x = 0

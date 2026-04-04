@@ -1,4 +1,4 @@
-import { WebGLRenderer, type GLTexture } from "./WebGLRenderer"
+import { WebGLRenderer, type GLTexture } from './WebGLRenderer'
 
 export interface TextStyleDef {
   fontFamily: string
@@ -25,17 +25,17 @@ export class TextRenderer {
 
   constructor(renderer: WebGLRenderer) {
     this.renderer = renderer
-    this.offscreen = document.createElement("canvas")
-    this.ctx = this.offscreen.getContext("2d")!
+    this.offscreen = document.createElement('canvas')
+    this.ctx = this.offscreen.getContext('2d')!
   }
 
   private makeKey(text: string, style: TextStyleDef): string {
-    return `${text}|${style.fontFamily}|${style.fontSize}|${style.fill}|${style.fontWeight ?? ""}|${style.stroke ?? ""}|${style.strokeWidth ?? 0}`
+    return `${text}|${style.fontFamily}|${style.fontSize}|${style.fill}|${style.fontWeight ?? ''}|${style.stroke ?? ''}|${style.strokeWidth ?? 0}`
   }
 
   private renderToTexture(text: string, style: TextStyleDef): CachedText {
     const ctx = this.ctx
-    const font = `${style.fontWeight ?? "normal"} ${style.fontSize}px ${style.fontFamily}`
+    const font = `${style.fontWeight ?? 'normal'} ${style.fontSize}px ${style.fontFamily}`
     ctx.font = font
 
     const metrics = ctx.measureText(text)
@@ -46,13 +46,13 @@ export class TextRenderer {
     this.offscreen.height = h
 
     ctx.font = font
-    ctx.textBaseline = "top"
+    ctx.textBaseline = 'top'
     ctx.clearRect(0, 0, w, h)
 
     if (style.stroke && style.strokeWidth) {
       ctx.strokeStyle = style.stroke
       ctx.lineWidth = style.strokeWidth
-      ctx.lineJoin = "round"
+      ctx.lineJoin = 'round'
       ctx.strokeText(text, 2, 2)
     }
 

@@ -1,28 +1,28 @@
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from "../constants"
-import { justPressed, Action } from "../input"
-import type { Scene } from "./SceneManager"
-import { TextRenderer, type TextStyleDef } from "../rendering/TextRenderer"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../constants'
+import { justPressed, Action } from '../input'
+import type { Scene } from './SceneManager'
+import { TextRenderer, type TextStyleDef } from '../rendering/TextRenderer'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 const titleStyle: TextStyleDef = {
-  fontFamily: "monospace",
+  fontFamily: 'monospace',
   fontSize: 36,
-  fill: "#0060ff",
-  fontWeight: "bold",
-  stroke: "#ffffff",
+  fill: '#0060ff',
+  fontWeight: 'bold',
+  stroke: '#ffffff',
   strokeWidth: 4,
 }
 
 const pressStyle: TextStyleDef = {
-  fontFamily: "monospace",
+  fontFamily: 'monospace',
   fontSize: 18,
-  fill: "#ffffff",
+  fill: '#ffffff',
 }
 
 const controlsStyle: TextStyleDef = {
-  fontFamily: "monospace",
+  fontFamily: 'monospace',
   fontSize: 12,
-  fill: "#cccccc",
+  fill: '#cccccc',
 }
 
 export class TitleScene implements Scene {
@@ -47,7 +47,7 @@ export class TitleScene implements Scene {
 
   render(_interpolation: number, _renderer: WebGLRenderer) {
     this.textRenderer.drawText(
-      "SONIC PLATFORMER",
+      'SONIC PLATFORMER',
       titleStyle,
       SCREEN_WIDTH / 2,
       SCREEN_HEIGHT / 3,
@@ -57,7 +57,7 @@ export class TitleScene implements Scene {
 
     if (Math.floor(this.blinkTimer / 30) % 2 === 0) {
       this.textRenderer.drawText(
-        "PRESS SPACE TO START",
+        'PRESS SPACE TO START',
         pressStyle,
         SCREEN_WIDTH / 2,
         SCREEN_HEIGHT * 0.6,
@@ -67,7 +67,7 @@ export class TitleScene implements Scene {
     }
 
     this.textRenderer.drawText(
-      "ARROWS / WASD: Move    SPACE / Z: Jump    DOWN + JUMP: Spin Dash",
+      'ARROWS / WASD: Move    SPACE / Z: Jump    DOWN + JUMP: Spin Dash',
       controlsStyle,
       SCREEN_WIDTH / 2,
       SCREEN_HEIGHT * 0.8,

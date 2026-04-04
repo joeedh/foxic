@@ -1,6 +1,6 @@
-import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getEnemyFrame } from "../rendering/AssetLoader"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import type { GameEntity, CollisionResult } from '../level/LevelLoader'
+import { getEnemyFrame } from '../rendering/AssetLoader'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export abstract class Enemy implements GameEntity {
   x: number
@@ -10,7 +10,7 @@ export abstract class Enemy implements GameEntity {
   active = true
   protected timer = 0
   protected flipX = false
-  protected abstract enemyType: "crab" | "bee"
+  protected abstract enemyType: 'crab' | 'bee'
 
   constructor(x: number, y: number) {
     this.x = x

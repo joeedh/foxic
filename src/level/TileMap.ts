@@ -1,7 +1,7 @@
-import { TILE_SIZE } from "../constants"
-import { getTileType, getTileHeight, type TileType } from "./Tile"
-import { getTileFrame, getTileVariantCount } from "../rendering/AssetLoader"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import { TILE_SIZE } from '../constants'
+import { getTileType, getTileHeight, type TileType } from './Tile'
+import { getTileFrame, getTileVariantCount } from '../rendering/AssetLoader'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export class TileMap {
   readonly width: number // in tiles
@@ -18,7 +18,7 @@ export class TileMap {
     return (h ^ (h >>> 16)) >>> 0
   }
 
-  constructor(grid: number[][], tileset: string = "greenhill") {
+  constructor(grid: number[][], tileset: string = 'greenhill') {
     this.grid = grid
     this.height = grid.length
     this.width = grid[0].length
@@ -27,7 +27,13 @@ export class TileMap {
     this.tileset = tileset
   }
 
-  render(renderer: WebGLRenderer, camX: number, camY: number, viewW: number, viewH: number) {
+  render(
+    renderer: WebGLRenderer,
+    camX: number,
+    camY: number,
+    viewW: number,
+    viewH: number,
+  ) {
     const startCol = Math.max(0, Math.floor(camX / TILE_SIZE))
     const endCol = Math.min(this.width, Math.ceil((camX + viewW) / TILE_SIZE))
     const startRow = Math.max(0, Math.floor(camY / TILE_SIZE))
@@ -39,9 +45,14 @@ export class TileMap {
         if (id === 0) continue
 
         const variantCount = getTileVariantCount(id)
-        const frame = variantCount > 0
-          ? getTileFrame(id, this.tileset, TileMap.tileHash(row, col) % variantCount)
-          : getTileFrame(id, this.tileset)
+        const frame =
+          variantCount > 0
+            ? getTileFrame(
+                id,
+                this.tileset,
+                TileMap.tileHash(row, col) % variantCount,
+              )
+            : getTileFrame(id, this.tileset)
         if (!frame) continue
 
         renderer.drawFrame(

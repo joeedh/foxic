@@ -1,12 +1,12 @@
-import { WebGLRenderer } from "./rendering/WebGLRenderer"
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from "./constants"
-import { initInput, pollInput } from "./input"
-import { GameLoop } from "./core/GameLoop"
-import { SceneManager } from "./scenes/SceneManager"
-import { TitleScene } from "./scenes/TitleScene"
-import { GameScene } from "./scenes/GameScene"
-import { createLevel1, createLevel2 } from "./level/LevelData"
-import { loadAllAssets } from "./rendering/AssetLoader"
+import { WebGLRenderer } from './rendering/WebGLRenderer'
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from './constants'
+import { initInput, pollInput } from './input'
+import { GameLoop } from './core/GameLoop'
+import { SceneManager } from './scenes/SceneManager'
+import { TitleScene } from './scenes/TitleScene'
+import { GameScene } from './scenes/GameScene'
+import { createLevel1, createLevel2 } from './level/LevelData'
+import { loadAllAssets } from './rendering/AssetLoader'
 
 async function init() {
   const renderer = new WebGLRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, [

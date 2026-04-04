@@ -1,6 +1,6 @@
-import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getSpringFrame } from "../rendering/AssetLoader"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import type { GameEntity, CollisionResult } from '../level/LevelLoader'
+import { getSpringFrame } from '../rendering/AssetLoader'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export class Spring implements GameEntity {
   x: number
@@ -11,13 +11,13 @@ export class Spring implements GameEntity {
   force: number
   private compressed = false
   private compressTimer = 0
-  private color: "yellow" | "red"
+  private color: 'yellow' | 'red'
 
   constructor(x: number, y: number, force: number) {
     this.x = x
     this.y = y
     this.force = force
-    this.color = force < -11 ? "red" : "yellow"
+    this.color = force < -11 ? 'red' : 'yellow'
   }
 
   trigger() {

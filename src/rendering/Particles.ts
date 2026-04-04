@@ -1,4 +1,4 @@
-import type { WebGLRenderer } from "./WebGLRenderer"
+import type { WebGLRenderer } from './WebGLRenderer'
 
 interface Particle {
   x: number

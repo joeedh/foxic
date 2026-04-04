@@ -1,5 +1,5 @@
-import { TileMap } from "../level/TileMap"
-import { PLAYER_RADIUS } from "../constants"
+import { TileMap } from '../level/TileMap'
+import { PLAYER_RADIUS } from '../constants'
 
 export interface SensorResult {
   hit: boolean

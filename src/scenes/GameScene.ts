@@ -1,14 +1,19 @@
-import type { Scene } from "./SceneManager"
-import { loadLevel, type LoadedLevel } from "../level/LevelLoader"
-import type { LevelDefinition } from "../level/LevelData"
-import { HUD } from "../rendering/HUD"
-import { ParallaxBackground } from "../rendering/ParallaxBackground"
-import { pressed, Action } from "../input"
-import { PLAYER_WIDTH, TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT } from "../constants"
-import { aabbOverlap, playerAABB } from "../physics/CollisionDetection"
-import { ScatteredRing } from "../entities/Ring"
-import { ParticleSystem } from "../rendering/Particles"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import type { Scene } from './SceneManager'
+import { loadLevel, type LoadedLevel } from '../level/LevelLoader'
+import type { LevelDefinition } from '../level/LevelData'
+import { HUD } from '../rendering/HUD'
+import { ParallaxBackground } from '../rendering/ParallaxBackground'
+import { pressed, Action } from '../input'
+import {
+  PLAYER_WIDTH,
+  TILE_SIZE,
+  SCREEN_WIDTH,
+  SCREEN_HEIGHT,
+} from '../constants'
+import { aabbOverlap, playerAABB } from '../physics/CollisionDetection'
+import { ScatteredRing } from '../entities/Ring'
+import { ParticleSystem } from '../rendering/Particles'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export class GameScene implements Scene {
   private level!: LoadedLevel
@@ -120,7 +125,7 @@ export class GameScene implements Scene {
       this.dustTimer = 0
     }
 
-    if (player.state === "spindash") {
+    if (player.state === 'spindash') {
       this.particles.emitSpindashSpark(
         player.physics.x,
         player.physics.y + player.height,
@@ -133,8 +138,8 @@ export class GameScene implements Scene {
       player.physics.x,
       player.physics.y,
       player.physics.onGround,
-      pressed(Action.Up) && player.state === "idle",
-      pressed(Action.Down) && player.state === "idle",
+      pressed(Action.Up) && player.state === 'idle',
+      pressed(Action.Down) && player.state === 'idle',
       player.physics.xSpeed,
     )
 

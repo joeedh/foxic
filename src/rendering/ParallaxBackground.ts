@@ -1,7 +1,7 @@
-import { SCREEN_WIDTH, SCREEN_HEIGHT } from "../constants"
-import { backgroundTextures } from "./AssetLoader"
-import type { GLTexture } from "./WebGLRenderer"
-import type { WebGLRenderer } from "./WebGLRenderer"
+import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../constants'
+import { backgroundTextures } from './AssetLoader'
+import type { GLTexture } from './WebGLRenderer'
+import type { WebGLRenderer } from './WebGLRenderer'
 
 export class ParallaxBackground {
   private bgTexture: GLTexture | null = null
@@ -10,7 +10,7 @@ export class ParallaxBackground {
   private layer1X = 0
 
   constructor(levelName?: string) {
-    const bgKey = levelName === "Mechanical Plant" ? "industrial" : "greenhill"
+    const bgKey = levelName === 'Mechanical Plant' ? 'industrial' : 'greenhill'
     this.bgTexture = backgroundTextures[bgKey] ?? null
   }
 
@@ -28,7 +28,27 @@ export class ParallaxBackground {
   render(renderer: WebGLRenderer) {
     if (!this.bgTexture) return
     const w = SCREEN_WIDTH * 2
-    renderer.drawSprite(this.bgTexture, this.layer0X, 0, w, SCREEN_HEIGHT, 0, 0, 1, 1)
-    renderer.drawSprite(this.bgTexture, this.layer1X, 0, w, SCREEN_HEIGHT, 0, 0, 1, 1)
+    renderer.drawSprite(
+      this.bgTexture,
+      this.layer0X,
+      0,
+      w,
+      SCREEN_HEIGHT,
+      0,
+      0,
+      1,
+      1,
+    )
+    renderer.drawSprite(
+      this.bgTexture,
+      this.layer1X,
+      0,
+      w,
+      SCREEN_HEIGHT,
+      0,
+      0,
+      1,
+      1,
+    )
   }
 }

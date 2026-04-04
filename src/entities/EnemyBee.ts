@@ -1,7 +1,7 @@
-import { Enemy } from "./Enemy"
+import { Enemy } from './Enemy'
 
 export class EnemyBee extends Enemy {
-  protected enemyType = "bee" as const
+  protected enemyType = 'bee' as const
   private baseY: number
   private amplitude = 30
   private frequency = 0.03

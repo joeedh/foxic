@@ -1,12 +1,12 @@
-import { StateMachine } from "../core/StateMachine"
-import { SonicPhysics, type PhysicsState } from "../physics/SonicPhysics"
+import { StateMachine } from '../core/StateMachine'
+import { SonicPhysics, type PhysicsState } from '../physics/SonicPhysics'
 import {
   PLAYER_WIDTH,
   PLAYER_HEIGHT,
   PLAYER_HEIGHT_ROLLING,
   SPINDASH_BASE,
   JUMP_BUFFER_FRAMES,
-} from "../constants"
+} from '../constants'
 import {
   pressed,
   justPressed,
@@ -14,20 +14,20 @@ import {
   pressedWithinFrames,
   consumePress,
   Action,
-} from "../input"
-import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getPlayerFrame } from "../rendering/AssetLoader"
-import { AnimationController } from "../rendering/AnimationController"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+} from '../input'
+import type { GameEntity, CollisionResult } from '../level/LevelLoader'
+import { getPlayerFrame } from '../rendering/AssetLoader'
+import { AnimationController } from '../rendering/AnimationController'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export type PlayerState =
-  | "idle"
-  | "running"
-  | "jumping"
-  | "rolling"
-  | "crouching"
-  | "spindash"
-  | "falling"
+  | 'idle'
+  | 'running'
+  | 'jumping'
+  | 'rolling'
+  | 'crouching'
+  | 'spindash'
+  | 'falling'
 
 export class Player implements GameEntity {
   physics: PhysicsState
@@ -56,64 +56,64 @@ export class Player implements GameEntity {
     }
 
     this.anim = new AnimationController()
-    this.anim.define("idle", {
-      frames: ["idle"],
+    this.anim.define('idle', {
+      frames: ['idle'],
       ticksPerFrame: 1,
       loop: false,
     })
-    this.anim.define("run", {
-      frames: ["run1", "run2", "run3", "run2"],
+    this.anim.define('run', {
+      frames: ['run1', 'run2', 'run3', 'run2'],
       ticksPerFrame: 15,
       loop: true,
     })
-    this.anim.define("jump", {
-      frames: ["jump"],
+    this.anim.define('jump', {
+      frames: ['jump'],
       ticksPerFrame: 1,
       loop: false,
     })
-    this.anim.define("crouch", {
-      frames: ["crouch"],
+    this.anim.define('crouch', {
+      frames: ['crouch'],
       ticksPerFrame: 1,
       loop: false,
     })
-    this.anim.define("skid", {
-      frames: ["skid"],
+    this.anim.define('skid', {
+      frames: ['skid'],
       ticksPerFrame: 1,
       loop: false,
     })
-    this.anim.define("push", {
-      frames: ["push"],
+    this.anim.define('push', {
+      frames: ['push'],
       ticksPerFrame: 1,
       loop: false,
     })
-    this.anim.play("idle")
+    this.anim.play('idle')
 
     this.sm = new StateMachine<Player, PlayerState>(this)
     this.setupStates()
-    this.sm.transition("falling")
+    this.sm.transition('falling')
   }
 
   private setupStates() {
-    this.sm.add("idle", {
+    this.sm.add('idle', {
       update: (p) => {
         p.sonicPhysics.updateGround(p.physics, false, false, false)
 
         if (!p.physics.onGround) {
-          p.sm.transition("falling")
+          p.sm.transition('falling')
         } else if (pressed(Action.Left) || pressed(Action.Right)) {
-          p.sm.transition("running")
+          p.sm.transition('running')
         } else if (pressed(Action.Down)) {
-          p.sm.transition("crouching")
+          p.sm.transition('crouching')
         } else if (justPressed(Action.Jump)) {
           p.sonicPhysics.jump(p.physics)
-          p.sm.transition("jumping")
+          p.sm.transition('jumping')
         }
 
-        p.anim.play(p.physics.pushing ? "push" : "idle")
+        p.anim.play(p.physics.pushing ? 'push' : 'idle')
       },
     })
 
-    this.sm.add("running", {
+    this.sm.add('running', {
       update: (p) => {
         const left = pressed(Action.Left)
         const right = pressed(Action.Right)
@@ -123,35 +123,35 @@ export class Player implements GameEntity {
         if (left) p.facingRight = false
 
         if (!p.physics.onGround) {
-          p.sm.transition("falling")
+          p.sm.transition('falling')
         } else if (
           pressed(Action.Down) &&
           Math.abs(p.physics.groundSpeed) > 1
         ) {
-          p.sm.transition("rolling")
+          p.sm.transition('rolling')
         } else if (p.physics.groundSpeed === 0 && !left && !right) {
-          p.sm.transition("idle")
+          p.sm.transition('idle')
         } else if (justPressed(Action.Jump)) {
           p.sonicPhysics.jump(p.physics)
-          p.sm.transition("jumping")
+          p.sm.transition('jumping')
         }
 
         const isSkidding =
           (right && p.physics.groundSpeed < -0.5) ||
           (left && p.physics.groundSpeed > 0.5)
         if (p.physics.pushing) {
-          p.anim.play("push")
+          p.anim.play('push')
         } else if (isSkidding) {
-          p.anim.play("skid")
+          p.anim.play('skid')
         } else {
-          p.anim.play("run")
+          p.anim.play('run')
           const speedRatio = Math.abs(p.physics.groundSpeed) / 3
           p.anim.setSpeedMultiplier(0.5 + speedRatio * 2.5)
         }
       },
     })
 
-    this.sm.add("jumping", {
+    this.sm.add('jumping', {
       update: (p) => {
         const left = pressed(Action.Left)
         const right = pressed(Action.Right)
@@ -168,11 +168,11 @@ export class Player implements GameEntity {
           p.handleLanding()
         }
 
-        p.anim.play("jump")
+        p.anim.play('jump')
       },
     })
 
-    this.sm.add("falling", {
+    this.sm.add('falling', {
       update: (p) => {
         const left = pressed(Action.Left)
         const right = pressed(Action.Right)
@@ -185,46 +185,46 @@ export class Player implements GameEntity {
           p.handleLanding()
         }
 
-        p.anim.play("jump")
+        p.anim.play('jump')
       },
     })
 
-    this.sm.add("rolling", {
+    this.sm.add('rolling', {
       update: (p) => {
         const left = pressed(Action.Left)
         const right = pressed(Action.Right)
         p.sonicPhysics.updateGround(p.physics, left, right, true)
 
         if (!p.physics.onGround) {
-          p.sm.transition("jumping")
+          p.sm.transition('jumping')
         } else if (Math.abs(p.physics.groundSpeed) < 0.5) {
-          p.sm.transition("idle")
+          p.sm.transition('idle')
         } else if (justPressed(Action.Jump)) {
           p.sonicPhysics.jump(p.physics)
-          p.sm.transition("jumping")
+          p.sm.transition('jumping')
         }
 
-        p.anim.play("jump")
+        p.anim.play('jump')
       },
     })
 
-    this.sm.add("crouching", {
+    this.sm.add('crouching', {
       update: (p) => {
         p.sonicPhysics.updateGround(p.physics, false, false, false)
 
         if (!p.physics.onGround) {
-          p.sm.transition("falling")
+          p.sm.transition('falling')
         } else if (!pressed(Action.Down)) {
-          p.sm.transition("idle")
+          p.sm.transition('idle')
         } else if (justPressed(Action.Jump)) {
-          p.sm.transition("spindash")
+          p.sm.transition('spindash')
         }
 
-        p.anim.play("crouch")
+        p.anim.play('crouch')
       },
     })
 
-    this.sm.add("spindash", {
+    this.sm.add('spindash', {
       enter: (p) => {
         p.spindashCharge = 0
       },
@@ -240,10 +240,10 @@ export class Player implements GameEntity {
         if (!pressed(Action.Down)) {
           const speed = SPINDASH_BASE + Math.floor(p.spindashCharge / 2)
           p.physics.groundSpeed = p.facingRight ? speed : -speed
-          p.sm.transition("rolling")
+          p.sm.transition('rolling')
         }
 
-        p.anim.play("crouch")
+        p.anim.play('crouch')
       },
     })
   }
@@ -252,13 +252,13 @@ export class Player implements GameEntity {
     if (pressedWithinFrames(Action.Jump, JUMP_BUFFER_FRAMES)) {
       consumePress(Action.Jump)
       this.sonicPhysics.jump(this.physics)
-      this.sm.transition("jumping")
+      this.sm.transition('jumping')
     } else if (pressed(Action.Down)) {
-      this.sm.transition("rolling")
+      this.sm.transition('rolling')
     } else if (this.physics.groundSpeed === 0) {
-      this.sm.transition("idle")
+      this.sm.transition('idle')
     } else {
-      this.sm.transition("running")
+      this.sm.transition('running')
     }
   }
 
@@ -276,7 +276,7 @@ export class Player implements GameEntity {
 
   get isRolling(): boolean {
     const s = this.sm.current
-    return s === "rolling" || s === "jumping" || s === "spindash"
+    return s === 'rolling' || s === 'jumping' || s === 'spindash'
   }
 
   get height(): number {
@@ -305,10 +305,17 @@ export class Player implements GameEntity {
 
     const drawW = PLAYER_WIDTH * 2
     const drawH = PLAYER_HEIGHT * 1.5
-    renderer.drawFrame(frame, this.physics.x - drawW / 2, this.physics.y + this.height / 2 - drawH / 2, drawW, drawH, {
-      alpha,
-      flipX: !this.facingRight,
-    })
+    renderer.drawFrame(
+      frame,
+      this.physics.x - drawW / 2,
+      this.physics.y + this.height / 2 - drawH / 2,
+      drawW,
+      drawH,
+      {
+        alpha,
+        flipX: !this.facingRight,
+      },
+    )
   }
 
   onPlayerCollision(): CollisionResult | null {
@@ -331,6 +338,6 @@ export class Player implements GameEntity {
     this.physics.onGround = false
     this.physics.groundSpeed = 0
     this.rings = 0
-    this.sm.transition("falling")
+    this.sm.transition('falling')
   }
 }

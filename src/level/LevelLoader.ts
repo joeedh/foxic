@@ -1,15 +1,15 @@
-import { TileMap } from "./TileMap"
-import { type LevelDefinition } from "./LevelData"
-import { SensorSystem } from "../physics/SensorSystem"
-import { SonicPhysics } from "../physics/SonicPhysics"
-import { Player } from "../entities/Player"
-import { Ring } from "../entities/Ring"
-import { EnemyCrab } from "../entities/EnemyCrab"
-import { EnemyBee } from "../entities/EnemyBee"
-import { Spring } from "../entities/Spring"
-import { Camera } from "../camera"
-import { TILE_SIZE } from "../constants"
-import type { WebGLRenderer } from "../rendering/WebGLRenderer"
+import { TileMap } from './TileMap'
+import { type LevelDefinition } from './LevelData'
+import { SensorSystem } from '../physics/SensorSystem'
+import { SonicPhysics } from '../physics/SonicPhysics'
+import { Player } from '../entities/Player'
+import { Ring } from '../entities/Ring'
+import { EnemyCrab } from '../entities/EnemyCrab'
+import { EnemyBee } from '../entities/EnemyBee'
+import { Spring } from '../entities/Spring'
+import { Camera } from '../camera'
+import { TILE_SIZE } from '../constants'
+import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 export interface CollisionResult {
   scorePoints?: number
@@ -45,10 +45,10 @@ export interface LoadedLevel {
 
 export function loadLevel(def: LevelDefinition): LoadedLevel {
   const tilesetMap: Record<string, string> = {
-    "Green Hill": "greenhill",
-    "Mechanical Plant": "industrial",
+    'Green Hill': 'greenhill',
+    'Mechanical Plant': 'industrial',
   }
-  const tileset = tilesetMap[def.name] ?? "greenhill"
+  const tileset = tilesetMap[def.name] ?? 'greenhill'
   const tileMap = new TileMap(def.tileGrid, tileset)
   const sensors = new SensorSystem(tileMap)
   const sonicPhysics = new SonicPhysics(sensors)
@@ -62,16 +62,16 @@ export function loadLevel(def: LevelDefinition): LoadedLevel {
     let entity: GameEntity | null = null
 
     switch (spawn.type) {
-      case "ring":
+      case 'ring':
         entity = new Ring(spawn.x, spawn.y)
         break
-      case "crab":
+      case 'crab':
         entity = new EnemyCrab(spawn.x, spawn.y, tileMap)
         break
-      case "bee":
+      case 'bee':
         entity = new EnemyBee(spawn.x, spawn.y)
         break
-      case "spring": {
+      case 'spring': {
         const force = (spawn.properties?.force as number) ?? -10
         entity = new Spring(spawn.x, spawn.y, force)
         break

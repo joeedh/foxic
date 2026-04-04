@@ -1,4 +1,4 @@
-import type { Frame } from "./SpriteSheet"
+import type { Frame } from './SpriteSheet'
 
 export interface GLTexture {
   glTexture: WebGLTexture
@@ -122,18 +122,18 @@ export class WebGLRenderer {
     this.bgColor = bgColor
     this.logicalWidth = width
     this.logicalHeight = height
-    this.canvas = document.createElement("canvas")
+    this.canvas = document.createElement('canvas')
     const dpr = window.devicePixelRatio || 1
     this.canvas.width = width * dpr
     this.canvas.height = height * dpr
     this.canvas.style.width = `${width}px`
     this.canvas.style.height = `${height}px`
 
-    const gl = this.canvas.getContext("webgl2", {
+    const gl = this.canvas.getContext('webgl2', {
       alpha: false,
       antialias: false,
     })
-    if (!gl) throw new Error("WebGL2 not supported")
+    if (!gl) throw new Error('WebGL2 not supported')
     this.gl = gl
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
@@ -143,9 +143,9 @@ export class WebGLRenderer {
     this.program = this.createProgram(VERT_SRC, FRAG_SRC)
     gl.useProgram(this.program)
 
-    this.uResolution = gl.getUniformLocation(this.program, "uResolution")!
-    this.uOffset = gl.getUniformLocation(this.program, "uOffset")!
-    this.uTexture = gl.getUniformLocation(this.program, "uTexture")!
+    this.uResolution = gl.getUniformLocation(this.program, 'uResolution')!
+    this.uOffset = gl.getUniformLocation(this.program, 'uOffset')!
+    this.uTexture = gl.getUniformLocation(this.program, 'uTexture')!
 
     gl.uniform2f(this.uResolution, width, height)
     gl.uniform2f(this.uOffset, 0, 0)
@@ -177,19 +177,19 @@ export class WebGLRenderer {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW)
 
     const stride = VERTEX_SIZE * 4
-    const aPosition = gl.getAttribLocation(this.program, "aPosition")
+    const aPosition = gl.getAttribLocation(this.program, 'aPosition')
     gl.enableVertexAttribArray(aPosition)
     gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, stride, 0)
 
-    const aTexCoord = gl.getAttribLocation(this.program, "aTexCoord")
+    const aTexCoord = gl.getAttribLocation(this.program, 'aTexCoord')
     gl.enableVertexAttribArray(aTexCoord)
     gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, stride, 8)
 
-    const aColor = gl.getAttribLocation(this.program, "aColor")
+    const aColor = gl.getAttribLocation(this.program, 'aColor')
     gl.enableVertexAttribArray(aColor)
     gl.vertexAttribPointer(aColor, 4, gl.FLOAT, false, stride, 16)
 
-    const aChromaKey = gl.getAttribLocation(this.program, "aChromaKey")
+    const aChromaKey = gl.getAttribLocation(this.program, 'aChromaKey')
     gl.enableVertexAttribArray(aChromaKey)
     gl.vertexAttribPointer(aChromaKey, 1, gl.FLOAT, false, stride, 32)
 
@@ -204,14 +204,14 @@ export class WebGLRenderer {
     gl.shaderSource(vs, vertSrc)
     gl.compileShader(vs)
     if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-      throw new Error("Vertex shader: " + gl.getShaderInfoLog(vs))
+      throw new Error('Vertex shader: ' + gl.getShaderInfoLog(vs))
     }
 
     const fs = gl.createShader(gl.FRAGMENT_SHADER)!
     gl.shaderSource(fs, fragSrc)
     gl.compileShader(fs)
     if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-      throw new Error("Fragment shader: " + gl.getShaderInfoLog(fs))
+      throw new Error('Fragment shader: ' + gl.getShaderInfoLog(fs))
     }
 
     const prog = gl.createProgram()!
@@ -219,7 +219,7 @@ export class WebGLRenderer {
     gl.attachShader(prog, fs)
     gl.linkProgram(prog)
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      throw new Error("Program link: " + gl.getProgramInfoLog(prog))
+      throw new Error('Program link: ' + gl.getProgramInfoLog(prog))
     }
 
     gl.deleteShader(vs)
@@ -568,11 +568,7 @@ export class WebGLRenderer {
     })
     gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer)
     gl.viewport(0, 0, target.texture.width, target.texture.height)
-    gl.uniform2f(
-      this.uResolution,
-      target.texture.width,
-      target.texture.height,
-    )
+    gl.uniform2f(this.uResolution, target.texture.width, target.texture.height)
     this.currentTexture = null
   }
 
@@ -649,7 +645,7 @@ export class WebGLRenderer {
 
   async loadTexture(url: string): Promise<GLTexture> {
     const img = new Image()
-    img.crossOrigin = "anonymous"
+    img.crossOrigin = 'anonymous'
     img.src = url
     await img.decode()
 

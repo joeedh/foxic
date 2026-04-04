@@ -6,7 +6,7 @@ export interface AnimationDef {
 }
 
 export class AnimationController {
-  private currentAnim: string = ""
+  private currentAnim: string = ''
   private tickCounter = 0
   private frameIndex = 0
   private animations = new Map<string, AnimationDef>()
@@ -47,7 +47,7 @@ export class AnimationController {
 
   getCurrentFrame(): string {
     const anim = this.animations.get(this.currentAnim)
-    if (!anim || anim.frames.length === 0) return ""
+    if (!anim || anim.frames.length === 0) return ''
     return anim.frames[this.frameIndex]
   }
 }

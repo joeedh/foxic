@@ -1,4 +1,4 @@
-import type { GLTexture } from "./WebGLRenderer"
+import type { GLTexture } from './WebGLRenderer'
 
 export interface Frame {
   texture: GLTexture
@@ -35,8 +35,8 @@ export class SpriteSheet {
           texture,
           u0: col / cols + px,
           v0: row / rows + py,
-          u1: (col + 1) / cols - px*2.0,
-          v1: (row + 1) / rows - py*2.0,
+          u1: (col + 1) / cols - px * 2.0,
+          v1: (row + 1) / rows - py * 2.0,
         }
       }
     }

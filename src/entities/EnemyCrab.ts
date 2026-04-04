@@ -1,8 +1,8 @@
-import { Enemy } from "./Enemy"
-import type { TileMap } from "../level/TileMap"
+import { Enemy } from './Enemy'
+import type { TileMap } from '../level/TileMap'
 
 export class EnemyCrab extends Enemy {
-  protected enemyType = "crab" as const
+  protected enemyType = 'crab' as const
   private speed = 0.5
   private direction = 1
   private tileMap: TileMap

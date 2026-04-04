@@ -25,7 +25,7 @@ const rawKeys = new Set<Action>()
 const pressedAge = new Map<Action, number>()
 
 export function initInput() {
-  window.addEventListener("keydown", (e) => {
+  window.addEventListener('keydown', (e) => {
     const action = keyMap[e.code]
     if (action !== undefined) {
       rawKeys.add(action)
@@ -33,7 +33,7 @@ export function initInput() {
     }
   })
 
-  window.addEventListener("keyup", (e) => {
+  window.addEventListener('keyup', (e) => {
     const action = keyMap[e.code]
     if (action !== undefined) {
       rawKeys.delete(action)

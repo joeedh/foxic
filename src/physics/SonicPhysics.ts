@@ -18,8 +18,8 @@ import {
   PLAYER_HEIGHT,
   PLAYER_HEIGHT_ROLLING,
   PLAYER_RADIUS,
-} from "../constants"
-import { SensorSystem } from "./SensorSystem"
+} from '../constants'
+import { SensorSystem } from './SensorSystem'
 
 export interface PhysicsState {
   x: number
