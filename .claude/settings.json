@@ -1,0 +1,6 @@
+{
+  "planStorage": {
+    "enabled": true,
+    "path": "documentation/plans"
+  }
+}
