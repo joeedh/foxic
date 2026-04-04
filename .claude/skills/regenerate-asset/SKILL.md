@@ -31,6 +31,7 @@ Format: `<asset_name> [--prompt "new prompt text"] [--quality fast|balanced|qual
 4. **Save the current prompt to `promptHistory`**:
    - Copy the asset's current `prompt` object (including `seed` and `extraParameters` if present) and append it to the end of the `promptHistory` array.
    - Use the Edit tool to modify `src/rendering/GenerativeAssetData.ts` in place.
+   - Ensure the existing `promptHistory` array is preserved.
 
 5. **Update the asset's `prompt` field**:
    - Set `prompt.prompt` to the new prompt text.
