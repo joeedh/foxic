@@ -1,4 +1,3 @@
-import { Container } from "pixi.js"
 import { TileMap } from "./TileMap"
 import { type LevelDefinition } from "./LevelData"
 import { SensorSystem } from "../physics/SensorSystem"
@@ -10,19 +9,14 @@ import { EnemyBee } from "../entities/EnemyBee"
 import { Spring } from "../entities/Spring"
 import { Camera } from "../camera"
 import { TILE_SIZE } from "../constants"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export interface CollisionResult {
-  /** Player scored points */
   scorePoints?: number
-  /** Player collected rings */
   collectRings?: number
-  /** Player should be hurt (knockback from entity position) */
   hurtPlayer?: boolean
-  /** Set player's ySpeed (e.g. spring bounce, enemy stomp bounce) */
   setYSpeed?: number
-  /** Scatter the player's rings */
   scatterRings?: boolean
-  /** Player should leave the ground */
   detachFromGround?: boolean
 }
 
@@ -33,8 +27,7 @@ export interface GameEntity {
   height: number
   active: boolean
   update(dt: number): void
-  render(): void
-  addToContainer(container: Container): void
+  render(renderer: WebGLRenderer): void
   onPlayerCollision(
     playerIsRolling: boolean,
     playerYSpeed: number,
@@ -48,11 +41,9 @@ export interface LoadedLevel {
   entities: GameEntity[]
   camera: Camera
   sonicPhysics: SonicPhysics
-  container: Container
 }
 
 export function loadLevel(def: LevelDefinition): LoadedLevel {
-  // Map level name to tileset
   const tilesetMap: Record<string, string> = {
     "Green Hill": "greenhill",
     "Mechanical Plant": "industrial",
@@ -64,9 +55,6 @@ export function loadLevel(def: LevelDefinition): LoadedLevel {
   const camera = new Camera(def.width * TILE_SIZE, def.height * TILE_SIZE)
 
   const player = new Player(def.playerStart.x, def.playerStart.y, sonicPhysics)
-
-  const container = new Container()
-  container.addChild(tileMap.container)
 
   const entities: GameEntity[] = []
 
@@ -92,11 +80,8 @@ export function loadLevel(def: LevelDefinition): LoadedLevel {
 
     if (entity) {
       entities.push(entity)
-      entity.addToContainer(container)
     }
   }
 
-  player.addToContainer(container)
-
-  return { tileMap, player, entities, camera, sonicPhysics, container }
+  return { tileMap, player, entities, camera, sonicPhysics }
 }

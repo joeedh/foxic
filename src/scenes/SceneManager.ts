@@ -1,25 +1,22 @@
-import { Application, Container } from "pixi.js"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export interface Scene {
-  container: Container
   enter(): void
   exit(): void
   update(dt: number): void
-  render(interpolation: number): void
+  render(interpolation: number, renderer: WebGLRenderer): void
 }
 
 export class SceneManager {
   private currentScene: Scene | null = null
 
-  constructor(private app: Application) {}
+  constructor(private renderer: WebGLRenderer) {}
 
   switchTo(scene: Scene) {
     if (this.currentScene) {
       this.currentScene.exit()
-      this.app.stage.removeChild(this.currentScene.container)
     }
     this.currentScene = scene
-    this.app.stage.addChild(scene.container)
     scene.enter()
   }
 
@@ -28,6 +25,6 @@ export class SceneManager {
   }
 
   render(interpolation: number) {
-    this.currentScene?.render(interpolation)
+    this.currentScene?.render(interpolation, this.renderer)
   }
 }

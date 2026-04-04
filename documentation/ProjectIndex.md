@@ -2,7 +2,7 @@
 
 ## Overview
 
-2D Sonic-style platformer built with TypeScript + PixiJS v8, Vite, and pnpm.
+2D Sonic-style platformer built with TypeScript, a custom WebGL2 renderer, and Vite.
 
 ## Structure
 
@@ -12,7 +12,7 @@
 | `src/physics/` | Sonic momentum physics, 6-sensor raycasting, AABB collision |
 | `src/entities/` | Player, enemies (Crab, Bee), Ring, Spring |
 | `src/level/` | Tile system with heightmaps, 2 level definitions, loader |
-| `src/rendering/` | Sprites, animation, chroma-key filter, parallax, HUD, particles |
+| `src/rendering/` | Custom WebGL2 batch renderer, spritesheet system, text, parallax, HUD, particles |
 | `src/scenes/` | Scene manager, title screen, gameplay scene |
 | `public/assets/` | Backgrounds, spritesheets, tilesets |
 | `documentation/` | Conventions & design plans |
@@ -20,7 +20,7 @@
 
 ## Key Files
 
-- **`main.ts`** — Entry point, PixiJS init, asset loading, scene setup
+- **`main.ts`** — Entry point, WebGL renderer init, asset loading, scene setup
 - **`constants.ts`** — All physics tuning values
 - **`input.ts`** — Keyboard input with configurable press buffering
 - **`camera.ts`** — Sonic-style camera with speed-based lookahead
@@ -44,42 +44,47 @@
 
 ### Level
 - **`level/Tile.ts`** — 10 tile types with per-tile heightmaps and surface angles
-- **`level/TileMap.ts`** — Tile grid renderer with height queries
+- **`level/TileMap.ts`** — Tile grid with viewport-culled rendering and height queries
 - **`level/LevelData.ts`** — Two levels: Green Hill (200x30) and Mechanical Plant (200x30)
-- **`level/LevelLoader.ts`** — Instantiates levels from definitions
+- **`level/LevelLoader.ts`** — Instantiates levels from definitions, defines GameEntity interface
 
 ### Rendering
-- **`rendering/SpriteManager.ts`** — Spritesheet loading, caching, frame definitions
+- **`rendering/WebGLRenderer.ts`** — Immediate-mode WebGL2 batch renderer with index buffer, textured quads, tint, rotation, camera offset, FBO render targets, chroma-key baking, and debug stats
+- **`rendering/SpriteSheet.ts`** — Frame type (texture + UV rect) and grid-based spritesheet builder with optional border trim
+- **`rendering/AssetLoader.ts`** — Loads all textures, builds spritesheets, pre-bakes chroma key at load time, creates circle texture
+- **`rendering/TextRenderer.ts`** — Canvas 2D text rendering to GL textures with LRU cache eviction
 - **`rendering/AnimationController.ts`** — Frame-based animation with speed multiplier
-- **`rendering/ChromaKeyFilter.ts`** — GLSL magenta removal for AI-generated sprites
 - **`rendering/ParallaxBackground.ts`** — Dual-layer parallax scrolling
 - **`rendering/HUD.ts`** — Score, rings, time, level name overlay
-- **`rendering/Particles.ts`** — Dust, sparkles, poofs, spin dash sparks
+- **`rendering/Particles.ts`** — Dust, sparkles, poofs, spin dash sparks (rendered as colored quads)
 
 ### Scenes
-- **`scenes/SceneManager.ts`** — Scene transitions
+- **`scenes/SceneManager.ts`** — Scene transitions, holds renderer reference
 - **`scenes/TitleScene.ts`** — Title/menu screen
 - **`scenes/GameScene.ts`** — Main gameplay loop, entity management, collision
 
 ## Commands
 
 ```bash
-pnpm dev      # Dev server with HMR
-pnpm build    # TypeScript check + Vite build
-pnpm preview  # Preview built game
-pnpm format   # Run Prettier on src/ and index.html
+npm run dev      # Dev server with HMR
+npm run build    # TypeScript check + Vite build
+npm run preview  # Preview built game
+npm run format   # Run Prettier on src/ and index.html
 ```
 
 ## Dependencies
 
-**Runtime:** pixi.js v8.17.1, pixi-filters v6.1.5
-**Dev:** typescript v6.0.2, vite v8.0.3, prettier v3.8.1, mcp-image v0.10.0 (patched)
+**Runtime:** none (custom WebGL2 renderer)
+**Dev:** typescript v6.0.2, vite v8.0.3, prettier v3.8.1, mcp-image v0.10.0
 
 ## Architecture Highlights
 
+- **Custom WebGL2 renderer** — Immediate-mode batch renderer drawing textured quads with arbitrary UVs, replacing pixi.js. Single shader with per-vertex color/tint, rotation, and chroma-key support. Uses index buffer (4 verts/quad) and auto-flushes on texture change.
+- **Spritesheet system** — `Frame` type stores texture + UV coordinates. `SpriteSheet` class computes UVs from grid definitions. Chroma key is pre-baked into sprite textures at load time (FBO render pass) so no per-fragment branching at runtime.
+- **Render-to-texture** — FBO support via `createRenderTarget`/`pushRenderTarget`/`popRenderTarget` for offscreen rendering and post-processing.
+- **Text rendering** — Canvas 2D renders text to GL textures, cached with LRU eviction (max 64 entries).
 - **Sensor-based collision** matching classic Sonic, with per-tile heightmaps for pixel-perfect slopes
 - **GameEntity interface** for all game objects (update/render/collision)
 - **Fixed timestep** (60 FPS physics) with variable rendering via accumulator
-- **Chroma-key filtering** removes magenta backgrounds from AI-generated sprites
 - **No magic numbers** — all physics tuning in `constants.ts`
-- **Import order** convention: pixi.js -> core -> physics -> rendering -> entities -> local
+- **Import order** convention: rendering -> core -> physics -> entities -> local

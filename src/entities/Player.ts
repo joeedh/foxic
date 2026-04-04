@@ -1,4 +1,3 @@
-import { Sprite, Container } from "pixi.js"
 import { StateMachine } from "../core/StateMachine"
 import { SonicPhysics, type PhysicsState } from "../physics/SonicPhysics"
 import {
@@ -17,8 +16,9 @@ import {
   Action,
 } from "../input"
 import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getPlayerFrame, applyChromaKey } from "../rendering/SpriteManager"
+import { getPlayerFrame } from "../rendering/AssetLoader"
 import { AnimationController } from "../rendering/AnimationController"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export type PlayerState =
   | "idle"
@@ -33,7 +33,6 @@ export class Player implements GameEntity {
   physics: PhysicsState
   private sm: StateMachine<Player, PlayerState>
   private sonicPhysics: SonicPhysics
-  private sprite: Sprite
   private anim: AnimationController
   facingRight = true
   spindashCharge = 0
@@ -55,12 +54,6 @@ export class Player implements GameEntity {
       onGround: false,
       pushing: false,
     }
-
-    this.sprite = new Sprite(getPlayerFrame("idle"))
-    this.sprite.anchor.set(0.5, 0.5)
-    this.sprite.width = PLAYER_WIDTH * 2
-    this.sprite.height = PLAYER_HEIGHT * 1.5
-    applyChromaKey(this.sprite)
 
     this.anim = new AnimationController()
     this.anim.define("idle", {
@@ -143,7 +136,6 @@ export class Player implements GameEntity {
           p.sm.transition("jumping")
         }
 
-        // Skid animation when braking
         const isSkidding =
           (right && p.physics.groundSpeed < -0.5) ||
           (left && p.physics.groundSpeed > 0.5)
@@ -153,7 +145,6 @@ export class Player implements GameEntity {
           p.anim.play("skid")
         } else {
           p.anim.play("run")
-          // Scale animation speed with ground speed (slow walk -> fast run)
           const speedRatio = Math.abs(p.physics.groundSpeed) / 3
           p.anim.setSpeedMultiplier(0.5 + speedRatio * 2.5)
         }
@@ -300,26 +291,24 @@ export class Player implements GameEntity {
     this.anim.update()
   }
 
-  render() {
-    const frame = this.anim.getCurrentFrame()
-    this.sprite.texture = getPlayerFrame(frame)
+  render(renderer: WebGLRenderer) {
+    const frameName = this.anim.getCurrentFrame()
+    const frame = getPlayerFrame(frameName)
 
-    this.sprite.scale.x = this.facingRight
-      ? Math.abs(this.sprite.scale.x)
-      : -Math.abs(this.sprite.scale.x)
-
-    // Flicker when invincible
+    let alpha = 1
     if (
       this.invincibleTimer > 0 &&
       Math.floor(this.invincibleTimer / 4) % 2 === 0
     ) {
-      this.sprite.alpha = 0.4
-    } else {
-      this.sprite.alpha = 1
+      alpha = 0.4
     }
 
-    this.sprite.x = this.physics.x
-    this.sprite.y = this.physics.y + this.height / 2
+    const drawW = PLAYER_WIDTH * 2
+    const drawH = PLAYER_HEIGHT * 1.5
+    renderer.drawFrame(frame, this.physics.x - drawW / 2, this.physics.y + this.height / 2 - drawH / 2, drawW, drawH, {
+      alpha,
+      flipX: !this.facingRight,
+    })
   }
 
   onPlayerCollision(): CollisionResult | null {
@@ -343,9 +332,5 @@ export class Player implements GameEntity {
     this.physics.groundSpeed = 0
     this.rings = 0
     this.sm.transition("falling")
-  }
-
-  addToContainer(container: Container) {
-    container.addChild(this.sprite)
   }
 }

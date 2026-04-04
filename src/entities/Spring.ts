@@ -1,6 +1,6 @@
-import { Sprite, Container } from "pixi.js"
 import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getSpringFrame, applyChromaKey } from "../rendering/SpriteManager"
+import { getSpringFrame } from "../rendering/AssetLoader"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export class Spring implements GameEntity {
   x: number
@@ -8,7 +8,6 @@ export class Spring implements GameEntity {
   width = 16
   height = 16
   active = true
-  private sprite: Sprite
   force: number
   private compressed = false
   private compressTimer = 0
@@ -19,11 +18,6 @@ export class Spring implements GameEntity {
     this.y = y
     this.force = force
     this.color = force < -11 ? "red" : "yellow"
-    this.sprite = new Sprite(getSpringFrame(this.color, false))
-    this.sprite.anchor.set(0.5, 0.5)
-    this.sprite.width = 20
-    this.sprite.height = 20
-    applyChromaKey(this.sprite)
   }
 
   trigger() {
@@ -40,10 +34,9 @@ export class Spring implements GameEntity {
     }
   }
 
-  render() {
-    this.sprite.texture = getSpringFrame(this.color, this.compressed)
-    this.sprite.x = this.x
-    this.sprite.y = this.y
+  render(renderer: WebGLRenderer) {
+    const frame = getSpringFrame(this.color, this.compressed)
+    renderer.drawFrame(frame, this.x - 10, this.y - 10, 20, 20)
   }
 
   onPlayerCollision(
@@ -55,9 +48,5 @@ export class Spring implements GameEntity {
       return { setYSpeed: this.force, detachFromGround: true }
     }
     return null
-  }
-
-  addToContainer(container: Container) {
-    container.addChild(this.sprite)
   }
 }

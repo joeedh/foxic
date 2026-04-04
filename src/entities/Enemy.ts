@@ -1,6 +1,6 @@
-import { Sprite, Container } from "pixi.js"
 import type { GameEntity, CollisionResult } from "../level/LevelLoader"
-import { getEnemyFrame, applyChromaKey } from "../rendering/SpriteManager"
+import { getEnemyFrame } from "../rendering/AssetLoader"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export abstract class Enemy implements GameEntity {
   x: number
@@ -8,33 +8,24 @@ export abstract class Enemy implements GameEntity {
   width = 24
   height = 24
   active = true
-  protected sprite: Sprite
   protected timer = 0
+  protected flipX = false
   protected abstract enemyType: "crab" | "bee"
 
   constructor(x: number, y: number) {
     this.x = x
     this.y = y
-    // Initial texture will be set by subclass in first render
-    this.sprite = new Sprite()
-    this.sprite.anchor.set(0.5, 0.5)
-    this.sprite.width = 32
-    this.sprite.height = 32
-    applyChromaKey(this.sprite)
   }
 
   abstract update(dt: number): void
 
-  render() {
-    if (!this.active) {
-      this.sprite.visible = false
-      return
-    }
-    this.sprite.visible = true
-    const frame = Math.floor(this.timer / 10) % 3
-    this.sprite.texture = getEnemyFrame(this.enemyType, frame)
-    this.sprite.x = this.x
-    this.sprite.y = this.y
+  render(renderer: WebGLRenderer) {
+    if (!this.active) return
+    const frameIdx = Math.floor(this.timer / 10) % 3
+    const frame = getEnemyFrame(this.enemyType, frameIdx)
+    renderer.drawFrame(frame, this.x - 16, this.y - 16, 32, 32, {
+      flipX: this.flipX,
+    })
   }
 
   onPlayerCollision(
@@ -47,10 +38,6 @@ export abstract class Enemy implements GameEntity {
       return { scorePoints: 100, setYSpeed: -4 }
     }
     return { hurtPlayer: true, scatterRings: true }
-  }
-
-  addToContainer(container: Container) {
-    container.addChild(this.sprite)
   }
 
   destroy() {

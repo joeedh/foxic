@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js"
+import type { WebGLRenderer } from "./WebGLRenderer"
 
 interface Particle {
   x: number
@@ -8,94 +8,116 @@ interface Particle {
   life: number
   maxLife: number
   size: number
-  color: number
+  r: number
+  g: number
+  b: number
   gravity: number
   fadeOut: boolean
 }
 
-export class ParticleSystem {
-  container: Container
-  private particles: Particle[] = []
-  private graphics: Graphics
+function hexToRgb(hex: number): [number, number, number] {
+  return [
+    ((hex >> 16) & 0xff) / 255,
+    ((hex >> 8) & 0xff) / 255,
+    (hex & 0xff) / 255,
+  ]
+}
 
-  constructor() {
-    this.container = new Container()
-    this.graphics = new Graphics()
-    this.container.addChild(this.graphics)
+export class ParticleSystem {
+  private particles: Particle[] = []
+
+  private emit(
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+    life: number,
+    maxLife: number,
+    size: number,
+    color: number,
+    gravity: number,
+  ) {
+    const [r, g, b] = hexToRgb(color)
+    this.particles.push({
+      x,
+      y,
+      vx,
+      vy,
+      life,
+      maxLife,
+      size,
+      r,
+      g,
+      b,
+      gravity,
+      fadeOut: true,
+    })
   }
 
-  /** Dust puff when running on ground */
   emitDust(x: number, y: number, direction: number) {
     for (let i = 0; i < 3; i++) {
-      this.particles.push({
+      this.emit(
         x,
         y,
-        vx: -direction * (0.5 + Math.random() * 1.5),
-        vy: -(Math.random() * 1.5),
-        life: 15 + Math.floor(Math.random() * 10),
-        maxLife: 25,
-        size: 2 + Math.random() * 2,
-        color: 0xccbb99,
-        gravity: 0.05,
-        fadeOut: true,
-      })
+        -direction * (0.5 + Math.random() * 1.5),
+        -(Math.random() * 1.5),
+        15 + Math.floor(Math.random() * 10),
+        25,
+        2 + Math.random() * 2,
+        0xccbb99,
+        0.05,
+      )
     }
   }
 
-  /** Sparkle burst when collecting a ring */
   emitRingSparkle(x: number, y: number) {
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2
-      this.particles.push({
+      this.emit(
         x,
         y,
-        vx: Math.cos(angle) * (1.5 + Math.random()),
-        vy: Math.sin(angle) * (1.5 + Math.random()),
-        life: 12 + Math.floor(Math.random() * 8),
-        maxLife: 20,
-        size: 1.5 + Math.random(),
-        color: 0xffee44,
-        gravity: 0,
-        fadeOut: true,
-      })
+        Math.cos(angle) * (1.5 + Math.random()),
+        Math.sin(angle) * (1.5 + Math.random()),
+        12 + Math.floor(Math.random() * 8),
+        20,
+        1.5 + Math.random(),
+        0xffee44,
+        0,
+      )
     }
   }
 
-  /** Poof when destroying an enemy */
   emitEnemyPoof(x: number, y: number) {
     for (let i = 0; i < 12; i++) {
       const angle = Math.random() * Math.PI * 2
       const speed = 1 + Math.random() * 2
-      this.particles.push({
+      this.emit(
         x,
         y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 15 + Math.floor(Math.random() * 10),
-        maxLife: 25,
-        size: 2 + Math.random() * 3,
-        color: 0xff8800,
-        gravity: 0.08,
-        fadeOut: true,
-      })
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        15 + Math.floor(Math.random() * 10),
+        25,
+        2 + Math.random() * 3,
+        0xff8800,
+        0.08,
+      )
     }
   }
 
-  /** Spin dash charge sparks */
   emitSpindashSpark(x: number, y: number) {
     for (let i = 0; i < 2; i++) {
-      this.particles.push({
-        x: x + (Math.random() - 0.5) * 10,
+      this.emit(
+        x + (Math.random() - 0.5) * 10,
         y,
-        vx: (Math.random() - 0.5) * 3,
-        vy: -(1 + Math.random() * 3),
-        life: 8 + Math.floor(Math.random() * 6),
-        maxLife: 14,
-        size: 1 + Math.random(),
-        color: 0x4488ff,
-        gravity: 0,
-        fadeOut: true,
-      })
+        (Math.random() - 0.5) * 3,
+        -(1 + Math.random() * 3),
+        8 + Math.floor(Math.random() * 6),
+        14,
+        1 + Math.random(),
+        0x4488ff,
+        0,
+      )
     }
   }
 
@@ -112,12 +134,11 @@ export class ParticleSystem {
     }
   }
 
-  render() {
-    this.graphics.clear()
+  render(renderer: WebGLRenderer) {
     for (const p of this.particles) {
       const alpha = p.fadeOut ? p.life / p.maxLife : 1
-      this.graphics.circle(p.x, p.y, p.size)
-      this.graphics.fill({ color: p.color, alpha })
+      const s = p.size * 2
+      renderer.drawRect(p.x - p.size, p.y - p.size, s, s, p.r, p.g, p.b, alpha)
     }
   }
 }

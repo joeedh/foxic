@@ -1,17 +1,16 @@
-import { Container } from "pixi.js"
 import type { Scene } from "./SceneManager"
 import { loadLevel, type LoadedLevel } from "../level/LevelLoader"
 import type { LevelDefinition } from "../level/LevelData"
 import { HUD } from "../rendering/HUD"
 import { ParallaxBackground } from "../rendering/ParallaxBackground"
 import { pressed, Action } from "../input"
-import { PLAYER_WIDTH, TILE_SIZE } from "../constants"
+import { PLAYER_WIDTH, TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT } from "../constants"
 import { aabbOverlap, playerAABB } from "../physics/CollisionDetection"
 import { ScatteredRing } from "../entities/Ring"
 import { ParticleSystem } from "../rendering/Particles"
+import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export class GameScene implements Scene {
-  container: Container
   private level!: LoadedLevel
   private hud: HUD
   private background: ParallaxBackground
@@ -21,11 +20,14 @@ export class GameScene implements Scene {
   private particles: ParticleSystem
   private dustTimer = 0
 
-  constructor(levelDef: LevelDefinition, onLevelComplete: () => void) {
-    this.container = new Container()
+  constructor(
+    levelDef: LevelDefinition,
+    onLevelComplete: () => void,
+    renderer: WebGLRenderer,
+  ) {
     this.levelDef = levelDef
     this.onLevelComplete = onLevelComplete
-    this.hud = new HUD()
+    this.hud = new HUD(renderer)
     this.background = new ParallaxBackground(levelDef.name)
     this.particles = new ParticleSystem()
   }
@@ -33,37 +35,25 @@ export class GameScene implements Scene {
   enter() {
     this.level = loadLevel(this.levelDef)
     this.scatteredRings = []
-
-    this.container.addChild(this.background.container)
-    this.container.addChild(this.level.container)
-    this.level.container.addChild(this.particles.container)
-    this.container.addChild(this.hud.container)
-
     this.hud.reset()
   }
 
-  exit() {
-    this.container.removeChildren()
-  }
+  exit() {}
 
   update(_dt: number) {
     const { player, entities, camera, tileMap } = this.level
 
-    // Update player
     player.update(_dt)
 
-    // Update entities
     for (const entity of entities) {
       if (entity.active) {
         entity.update(_dt)
       }
     }
 
-    // Update scattered rings
     for (const ring of this.scatteredRings) {
       if (ring.active) {
         ring.update(_dt)
-        // Simple ground bounce
         const ground = tileMap.getGroundHeight(ring.x, ring.y, 8)
         if (ground !== null && ring.y >= ground.y) {
           ring.bounce(ground.y)
@@ -71,7 +61,6 @@ export class GameScene implements Scene {
       }
     }
 
-    // Player-entity collisions
     const pBox = playerAABB(player.physics, PLAYER_WIDTH, player.height)
 
     for (const entity of entities) {
@@ -117,7 +106,6 @@ export class GameScene implements Scene {
       }
     }
 
-    // Running dust particles
     if (player.physics.onGround && Math.abs(player.physics.groundSpeed) > 2) {
       this.dustTimer++
       if (this.dustTimer % 4 === 0) {
@@ -132,7 +120,6 @@ export class GameScene implements Scene {
       this.dustTimer = 0
     }
 
-    // Spindash charge sparks
     if (player.state === "spindash") {
       this.particles.emitSpindashSpark(
         player.physics.x,
@@ -140,10 +127,8 @@ export class GameScene implements Scene {
       )
     }
 
-    // Update particles
     this.particles.update()
 
-    // Camera
     camera.update(
       player.physics.x,
       player.physics.y,
@@ -153,9 +138,7 @@ export class GameScene implements Scene {
       player.physics.xSpeed,
     )
 
-    // Check if player fell off the map
     if (player.physics.y > this.levelDef.height * TILE_SIZE + 100) {
-      // Reset player
       player.physics.x = this.levelDef.playerStart.x
       player.physics.y = this.levelDef.playerStart.y
       player.physics.xSpeed = 0
@@ -164,12 +147,10 @@ export class GameScene implements Scene {
       player.rings = 0
     }
 
-    // Check level completion (reach the right side)
     if (player.physics.x > (this.levelDef.width - 5) * TILE_SIZE) {
       this.onLevelComplete()
     }
 
-    // Update HUD
     this.hud.update(player.score, player.rings, this.levelDef.name)
   }
 
@@ -178,35 +159,47 @@ export class GameScene implements Scene {
     for (let i = 0; i < ringCount; i++) {
       const angle = (i / ringCount) * Math.PI * 2
       const ring = new ScatteredRing(x, y, angle)
-      ring.addToContainer(this.level.container)
       this.scatteredRings.push(ring)
     }
   }
 
-  render(_interpolation: number) {
-    const { player, entities, camera } = this.level
+  render(_interpolation: number, renderer: WebGLRenderer) {
+    const { player, entities, camera, tileMap } = this.level
 
-    // Position world relative to camera
-    this.level.container.x = -camera.x
-    this.level.container.y = -camera.y
-
-    // Update background parallax
+    // Background (screen space)
     this.background.update(camera.x, camera.y)
+    this.background.render(renderer)
 
-    // Render player
-    player.render()
+    // World space
+    renderer.setOffset(-camera.x, -camera.y)
 
-    // Render entities
+    // Tiles
+    tileMap.render(renderer, camera.x, camera.y, SCREEN_WIDTH, SCREEN_HEIGHT)
+
+    // Entities
     for (const entity of entities) {
-      entity.render()
+      if (entity.active) {
+        entity.render(renderer)
+      }
     }
 
-    // Render scattered rings
+    // Player
+    player.render(renderer)
+
+    // Scattered rings
     for (const ring of this.scatteredRings) {
-      ring.render()
+      if (ring.active) {
+        ring.render(renderer)
+      }
     }
 
-    // Render particles
-    this.particles.render()
+    // Particles
+    this.particles.render(renderer)
+
+    // Back to screen space
+    renderer.resetOffset()
+
+    // HUD
+    this.hud.render(renderer)
   }
 }

@@ -5,13 +5,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "format": "prettier --write src/ index.html"
-  },
-  "dependencies": {
-    "pixi-filters": "^6.1.5",
-    "pixi.js": "^8.17.1"
+    "format": "prettier --write src/ index.html",
+    "playwright": "npx playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "mcp-image": "^0.10.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",

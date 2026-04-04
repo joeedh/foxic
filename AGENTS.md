@@ -1,3 +1,6 @@
+# Package Manager
+* Use pnpm
+
 # Project Index
 
 * The project index (an overview of the project) lives in documentation/ProjectIndex.md

@@ -27,10 +27,6 @@ export class EnemyCrab extends Enemy {
       this.direction *= -1
     }
 
-    // Flip sprite based on direction
-    this.sprite.scale.x =
-      this.direction > 0
-        ? Math.abs(this.sprite.scale.x)
-        : -Math.abs(this.sprite.scale.x)
+    this.flipX = this.direction < 0
   }
 }
