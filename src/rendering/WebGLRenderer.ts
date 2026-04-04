@@ -73,7 +73,7 @@ void main() {
 
   if (vChromaKey > 0.5) {
     float dist = distance(texColor.rgb, vec3(1.0, 0.0, 1.0));
-    float alpha = dist * dist * dist;
+    float alpha = smoothstep(0.0, 0.3, dist);
     texColor = vec4(texColor.rgb, alpha);
   }
 

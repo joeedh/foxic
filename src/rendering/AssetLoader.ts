@@ -94,35 +94,34 @@ export async function loadAllAssets(renderer: WebGLRenderer) {
   backgroundTextures.greenhill = bgGreenhill
   backgroundTextures.industrial = bgIndustrial
 
-  // Load tilesets (no chroma key needed)
+  // Load tilesets with chroma key (magenta -> alpha for slope/platform transparency)
   const tileFrameNames = [
-    "tile_1",
-    "tile_2",
-    "tile_3",
-    "tile_4",
-    "tile_9",
-    "tile_5",
-    "tile_6",
-    "tile_8",
-    "tile_7",
-    "tile_empty",
+    // Row 0
+    "tile_1", "tile_2", "tile_3", "tile_4", "tile_9",
+    // Row 1
+    "tile_5", "tile_6", "tile_8", "tile_7", "tile_empty",
+    // Row 2 (variants)
+    "tile_1_v1", "tile_1_v2", "tile_1_v3", "tile_2_v1", "tile_2_v2",
   ]
 
-  const [tileGreenhillTex, tileIndustrialTex] = await Promise.all([
+  const [tileGreenhillTexRaw, tileIndustrialTexRaw] = await Promise.all([
     renderer.loadTexture(getAssetPath("tileset_greenhill")),
     renderer.loadTexture(getAssetPath("tileset_industrial")),
   ])
 
+  const tileGreenhillTex = renderer.bakeChromaKey(tileGreenhillTexRaw)
+  const tileIndustrialTex = renderer.bakeChromaKey(tileIndustrialTexRaw)
+
   tileSheets["greenhill"] = new SpriteSheet(tileGreenhillTex, {
     cols: 5,
-    rows: 2,
+    rows: 3,
     frameNames: tileFrameNames,
     borderTrim: 40.0
   })
 
   tileSheets["industrial"] = new SpriteSheet(tileIndustrialTex, {
     cols: 5,
-    rows: 2,
+    rows: 3,
     frameNames: tileFrameNames,
     borderTrim: 40.0
   })
@@ -170,11 +169,31 @@ export function getSpringFrame(
   return itemsSheet.frames[`spring_${color}_${state}`]
 }
 
+const tileVariants: Record<number, string[]> = {
+  1: ["tile_1", "tile_1_v1", "tile_1_v2", "tile_1_v3"],
+  2: ["tile_2", "tile_2_v1", "tile_2_v2"],
+}
+
 export function getTileFrame(
   tileId: number,
   tileset: string,
+  variantIndex?: number,
 ): Frame | null {
-  return tileSheets[tileset]?.frames[`tile_${tileId}`] ?? null
+  const sheet = tileSheets[tileset]
+  if (!sheet) return null
+
+  if (variantIndex !== undefined) {
+    const variants = tileVariants[tileId]
+    if (variants) {
+      const name = variants[variantIndex % variants.length]
+      return sheet.frames[name] ?? null
+    }
+  }
+  return sheet.frames[`tile_${tileId}`] ?? null
+}
+
+export function getTileVariantCount(tileId: number): number {
+  return tileVariants[tileId]?.length ?? 0
 }
 
 export function hasTileset(name: string): boolean {

@@ -1,3 +1,6 @@
+# Planning
+* Save all plans (with descriptive names) to documentation/plans.
+
 # Package Manager And Commands
 * Use pnpm
 

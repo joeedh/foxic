@@ -1,6 +1,6 @@
 import { TILE_SIZE } from "../constants"
 import { getTileType, getTileHeight, type TileType } from "./Tile"
-import { getTileFrame } from "../rendering/AssetLoader"
+import { getTileFrame, getTileVariantCount } from "../rendering/AssetLoader"
 import type { WebGLRenderer } from "../rendering/WebGLRenderer"
 
 export class TileMap {
@@ -10,6 +10,13 @@ export class TileMap {
   readonly pixelHeight: number
   private grid: number[][]
   private tileset: string
+
+  // Deterministic hash from grid position for variant selection
+  private static tileHash(row: number, col: number): number {
+    let h = (row * 374761393 + col * 668265263) | 0
+    h = Math.imul(h ^ (h >>> 13), 1274126177)
+    return (h ^ (h >>> 16)) >>> 0
+  }
 
   constructor(grid: number[][], tileset: string = "greenhill") {
     this.grid = grid
@@ -31,7 +38,10 @@ export class TileMap {
         const id = this.grid[row][col]
         if (id === 0) continue
 
-        const frame = getTileFrame(id, this.tileset)
+        const variantCount = getTileVariantCount(id)
+        const frame = variantCount > 0
+          ? getTileFrame(id, this.tileset, TileMap.tileHash(row, col) % variantCount)
+          : getTileFrame(id, this.tileset)
         if (!frame) continue
 
         renderer.drawFrame(
