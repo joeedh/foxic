@@ -4,15 +4,34 @@ import { GenerativeAssets } from "./GenerativeAssetData"
 
 export type AssetPurpose = "tilemap" | "character" | "background"
 
+export type PromptParameter =
+  | {
+      type: "string"
+      name: string
+      value: string
+    }
+  | { type: "integer"; name: string; value: number }
+  | { type: "float"; name: string; value: number }
+  | { type: "number_array"; name: string; value: number[] }
+
+export interface Prompt {
+  prompt: string
+  // the prompt seed if one exists
+  seed?: number
+  // any other relevent prompt properties
+  extraParameters?: PromptParameter[]
+}
+
 export interface GenerativeAsset {
   name: string
   purpose: AssetPurpose
-  prompt: string
+  prompt: Prompt
   // does not includes the current this.prompt
-  promptHistory: string[]
+  promptHistory: Prompt[]
   outputFile: string
   width: number
   height: number
+  seed?: number
 }
 
 export function getAsset(name: string): GenerativeAsset {
