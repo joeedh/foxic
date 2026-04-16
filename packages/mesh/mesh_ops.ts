@@ -51,7 +51,14 @@ function loadUndoMesh(mesh: Mesh, data: DataView) {
   mesh.regenRender()
 }
 
-export type MeshCtx = IContextBase & { mesh: Mesh }
+export type MeshCtx = IContextBase & {
+  mesh: Mesh
+  canvas: {
+    getLocalMouse(x: number, y: number): Vector2
+    getGlobalMouse(x: number, y: number): Vector2
+  }
+  //
+}
 
 export class MeshOp<
   CTX extends MeshCtx,
@@ -133,9 +140,9 @@ export class DeleteOp<CTX extends MeshCtx> extends MeshOp<
     return {
       uiname: 'Delete',
       toolpath: 'mesh.delete',
-      inputs: ToolOp.inherit({
+      inputs: {
         selMask: new FlagProperty(config.SELECTMASK, MeshTypes),
-      }),
+      },
     }
   }
 
@@ -177,14 +184,17 @@ export class DeleteOp<CTX extends MeshCtx> extends MeshOp<
 
 ToolOp.register(DeleteOp)
 
-export class ExtrudeVertOp extends MeshOp<{ co: Vec3Property }> {
+export class ExtrudeVertOp<CTX extends MeshCtx> extends MeshOp<
+  CTX,
+  { co: Vec3Property }
+> {
   static tooldef() {
     return {
       uiname: 'Extrude Vertex',
       toolpath: 'mesh.extrude_vertex',
-      inputs: ToolOp.inherit({
+      inputs: {
         co: new Vec3Property(),
-      }),
+      },
     }
   }
 
@@ -211,20 +221,23 @@ export class ExtrudeVertOp extends MeshOp<{ co: Vec3Property }> {
       mesh.edges.active = ne
     }
 
-    window.redraw_all()
+    mesh.regenRender()
   }
 }
 
 ToolOp.register(ExtrudeVertOp)
 
-export class MakeFaceOp extends MeshOp<{ co: Vec3Property }> {
+export class MakeFaceOp<CTX extends MeshCtx> extends MeshOp<
+  CTX,
+  { co: Vec3Property }
+> {
   static tooldef() {
     return {
       uiname: 'Make Face',
       toolpath: 'mesh.make_face',
-      inputs: ToolOp.inherit({
+      inputs: {
         co: new Vec3Property(),
-      }),
+      },
     }
   }
 
@@ -312,7 +325,7 @@ export class MakeFaceOp extends MeshOp<{ co: Vec3Property }> {
 
 ToolOp.register(MakeFaceOp)
 
-export class FixWindingsOp extends MeshOp {
+export class FixWindingsOp<CTX extends MeshCtx> extends MeshOp<CTX> {
   static tooldef() {
     return {
       uiname: 'Fix Windings',
@@ -345,7 +358,7 @@ export class FixWindingsOp extends MeshOp {
 
 ToolOp.register(FixWindingsOp)
 
-export class FixMeshOp extends MeshOp {
+export class FixMeshOp<CTX extends MeshCtx> extends MeshOp<CTX> {
   static tooldef() {
     return {
       uiname: 'Fix Mesh',
@@ -363,21 +376,24 @@ export class FixMeshOp extends MeshOp {
 
 ToolOp.register(FixMeshOp)
 
-export class VertexSmoothOp extends MeshOp<{
-  repeat: IntProperty
-  factor: FloatProperty
-}> {
+export class VertexSmoothOp<CTX extends MeshCtx> extends MeshOp<
+  CTX,
+  {
+    repeat: IntProperty
+    factor: FloatProperty
+  }
+> {
   static tooldef() {
     return {
       uiname: 'Vertex Smooth',
       toolpath: 'mesh.vertex_smooth',
-      inputs: ToolOp.inherit({
+      inputs: {
         repeat: new IntProperty(1).setRange(1, 100).noUnits().saveLastValue(),
         factor: new FloatProperty(0.5)
           .setRange(0.0, 1.0)
           .noUnits()
           .saveLastValue(),
-      }),
+      },
     }
   }
 
@@ -393,7 +409,7 @@ export class VertexSmoothOp extends MeshOp<{
 
 ToolOp.register(VertexSmoothOp)
 
-export class ReverseEdgeOp extends MeshOp {
+export class ReverseEdgeOp<CTX extends MeshCtx> extends MeshOp<CTX> {
   static tooldef() {
     return {
       uiname: 'Reverse Edge Order',
@@ -413,18 +429,21 @@ export class ReverseEdgeOp extends MeshOp {
 
 ToolOp.register(ReverseEdgeOp)
 
-export class DuplicateOp extends MeshOp<{ doTransform: BoolProperty }> {
+export class DuplicateOp<CTX extends MeshCtx> extends MeshOp<
+  CTX,
+  { doTransform: BoolProperty }
+> {
   static tooldef() {
     return {
       uiname: 'Duplicate',
       toolpath: 'mesh.duplicate',
-      inputs: ToolOp.inherit({
+      inputs: {
         doTransform: new BoolProperty(true),
-      }),
+      },
     }
   }
 
-  static invoke(ctx: CTX, args: any) {
+  static invoke(ctx: any, args: any) {
     let tool = super.invoke(ctx, args)
 
     if (tool.inputs.doTransform.getValue()) {

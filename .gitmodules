@@ -1,0 +1,3 @@
+[submodule "packages/path.ux"]
+	path = packages/path.ux
+	url = https://github.com/joeedh/path.ux.git

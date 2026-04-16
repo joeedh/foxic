@@ -1,4 +1,4 @@
-import config from '../config/config.js'
+import config from './config'
 
 import {
   util,
@@ -16,13 +16,20 @@ import {
   Vec2Property,
   FlagProperty,
   keymap,
-  INumVector,
   PropertySlots,
   ToolDef,
-} from '../path.ux/pathux.js'
-import {Context} from './context.js'
-
-import {Vertex, MeshTypes, MeshFlags, MeshVector, Element, Mesh, ElementArray, Handle} from './mesh.js'
+} from 'path.ux'
+import {
+  Vertex,
+  MeshVector,
+  Element,
+  Mesh,
+  ElementArray,
+  Handle,
+  meshRedrawEmitter,
+} from './mesh'
+import { MeshTypes, MeshFlags } from './mesh_base'
+import type { MeshCtx } from './mesh_ops'
 
 const VecProperty = new Vertex().co.length === 3 ? Vec3Property : Vec2Property
 type VecProperty = Vertex['co'] extends Vector2 ? Vec2Property : Vec3Property
@@ -74,8 +81,8 @@ export class TransformElem {
   static transformDefine() {
     return {
       typeName: '',
-      uiName  : '',
-      selMask : 0,
+      uiName: '',
+      selMask: 0,
     }
   }
 
@@ -131,7 +138,11 @@ export class TransformVert extends TransformElem {
     return list
   }
 
-  static undoPre(mesh: Mesh, selMask: Number, list: TransformList<TransformVert>) {
+  static undoPre(
+    mesh: Mesh,
+    selMask: Number,
+    list: TransformList<TransformVert>,
+  ) {
     let ret = []
 
     for (let td of list) {
@@ -166,8 +177,8 @@ export class TransformVert extends TransformElem {
   static transformDefine() {
     return {
       typeName: 'verts',
-      uiName  : 'verts',
-      selMask : MeshTypes.VERTEX | MeshTypes.HANDLE,
+      uiName: 'verts',
+      selMask: MeshTypes.VERTEX | MeshTypes.HANDLE,
     }
   }
 
@@ -186,10 +197,13 @@ TransformElem.register(TransformVert)
 
 type TransformData = TransformList[]
 
-export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends PropertySlots = {}> extends ToolOp<
-  Inputs & {selMask: FlagProperty; center: VecProperty},
+export class TransformOp<
+  Inputs extends PropertySlots = {},
+  Outputs extends PropertySlots = {},
+> extends ToolOp<
+  Inputs & { selMask: FlagProperty; center: VecProperty },
   Outputs,
-  Context
+  MeshCtx
 > {
   transData?: TransformData
   deltaMpos: Vector2
@@ -219,7 +233,7 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
       toolpath: '',
       inputs: {
         selMask: new FlagProperty(config.SELECTMASK, MeshTypes),
-        center : new VecProperty(),
+        center: new VecProperty(),
       },
     }
   }
@@ -239,7 +253,7 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
     this.inputs.center.setValue(min.interp(max, 0.5))
   }
 
-  getTransData(ctx: Context, doCenter = true) {
+  getTransData(ctx: MeshCtx, doCenter = true) {
     if (this.transData) {
       if (doCenter) {
         this.calcTransCenter(this.transData)
@@ -264,22 +278,23 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
     return ret
   }
 
-  execPost(ctx: Context) {
+  execPost(ctx: MeshCtx) {
     this.transData = undefined
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
   }
 
-  execPre(ctx: Context) {
+  execPre(ctx: MeshCtx) {
     this.getTransData(ctx)
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
   }
 
-  modalStart(ctx: Context) {
-    super.modalStart(ctx)
+  modalStart(ctx: MeshCtx) {
+    const promise = super.modalStart(ctx)
     this.getTransData(ctx)
+    return promise
   }
 
-  undoPre(ctx: Context) {
+  undoPre(ctx: MeshCtx) {
     this._undo = {}
     this._undoSelMask = this.inputs.selMask.getValue()
 
@@ -290,20 +305,21 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
 
     for (let list of tdata) {
       let cls = TransformElem.getClass(list.typeName)!
+
       this._undo[list.typeName] = cls.undoPre(ctx.mesh, selMask, list)
     }
 
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', mesh)
   }
 
-  undo(ctx: Context) {
+  undo(ctx: MeshCtx) {
     let mesh = ctx.mesh
 
     for (let k in this._undo) {
       TransformElem.getClass(k)!.undo(mesh, this._undoSelMask!, this._undo[k])
     }
 
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', mesh)
   }
 
   on_pointerup(e: PointerEvent) {
@@ -331,11 +347,12 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
   on_pointermove(e: PointerEvent) {
     let ctx = this.modal_ctx!
 
-    let workspace = ctx.workspace!
+    let workspace = ctx.canvas
     let mpos = workspace.getLocalMouse(e.x, e.y)
 
     if (this.first) {
       this.startMpos.load(mpos)
+
       this.lastMpos.load(mpos)
       this.deltaMpos.zero()
       this.mpos.load(mpos)
@@ -353,17 +370,17 @@ export class TransformOp<Inputs extends PropertySlots = {}, Outputs extends Prop
   }
 }
 
-export class TranslateOp<Inputs extends PropertySlots = {}, Outputs extends PropertySlots = {}> extends TransformOp<
-  Inputs & {offset: VecProperty},
-  Outputs
-> {
+export class TranslateOp<
+  Inputs extends PropertySlots = {},
+  Outputs extends PropertySlots = {},
+> extends TransformOp<Inputs & { offset: VecProperty }, Outputs> {
   constructor() {
     super()
   }
 
   static tooldef() {
     return {
-      uiname  : 'Move',
+      uiname: 'Move',
       toolpath: 'transform.translate',
       inputs: ToolOp.inherit({
         offset: new VecProperty(),
@@ -382,7 +399,7 @@ export class TranslateOp<Inputs extends PropertySlots = {}, Outputs extends Prop
     this.exec(this.modal_ctx!)
   }
 
-  exec(ctx: Context) {
+  exec(ctx: MeshCtx) {
     let delta = this.inputs.offset.getValue()
 
     let matrix = new Matrix4()
@@ -398,31 +415,32 @@ export class TranslateOp<Inputs extends PropertySlots = {}, Outputs extends Prop
       }
     }
 
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
   }
 }
 
 ToolOp.register(TranslateOp)
 
-export class ScaleOp extends TransformOp<{scale: VecProperty}> {
+export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
   constructor() {
     super()
   }
 
   static tooldef() {
     return {
-      uiname  : 'Move',
+      uiname: 'Move',
       toolpath: 'transform.scale',
       inputs: ToolOp.inherit({
         scale: new VecProperty(),
       }),
+
       is_modal: true,
     }
   }
 
   on_pointermove(e: PointerEvent) {
     let ctx = this.modal_ctx!
-    let workspace = ctx.workspace!
+    let workspace = ctx.canvas
 
     super.on_pointermove(e)
 
@@ -442,7 +460,7 @@ export class ScaleOp extends TransformOp<{scale: VecProperty}> {
 
     let scenter = workspace.getGlobalMouse(center[0], center[1])
 
-    this.makeTempLine([e.x, e.y], scenter)
+    this.makeTempLine([e.x, e.y], scenter, 'black')
 
     let ratio = l2 / l1
     let scale = new Vector().addScalar(1.0)
@@ -453,7 +471,7 @@ export class ScaleOp extends TransformOp<{scale: VecProperty}> {
     this.exec(this.modal_ctx!)
   }
 
-  exec(ctx: Context) {
+  exec(ctx: MeshCtx) {
     let scale = this.inputs.scale.getValue()
     let center = this.inputs.center.getValue()
 
@@ -477,20 +495,20 @@ export class ScaleOp extends TransformOp<{scale: VecProperty}> {
       }
     }
 
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
   }
 }
 
 ToolOp.register(ScaleOp)
 
-export class RotateOp extends TransformOp<{th: FloatProperty}> {
+export class RotateOp extends TransformOp<{ th: FloatProperty }> {
   constructor() {
     super()
   }
 
   static tooldef() {
     return {
-      uiname  : 'Move',
+      uiname: 'Move',
       toolpath: 'transform.rotate',
       inputs: ToolOp.inherit({
         th: new FloatProperty(),
@@ -503,14 +521,14 @@ export class RotateOp extends TransformOp<{th: FloatProperty}> {
     super.on_pointermove(e)
 
     let ctx = this.modal_ctx!
-    let workspace = ctx.workspace!
+    let workspace = ctx.canvas
 
     this.resetTempGeom()
 
-    let {center, th} = this.getInputs()
+    let { center, th } = this.getInputs()
 
     let scenter = workspace.getGlobalMouse(center[0], center[1])
-    this.makeTempLine([e.x, e.y], scenter)
+    this.makeTempLine([e.x, e.y], scenter, 'black')
 
     let d1 = new Vector2(this.lastMpos)
     let d2 = new Vector2(this.mpos)
@@ -528,8 +546,8 @@ export class RotateOp extends TransformOp<{th: FloatProperty}> {
     this.lastMpos.load(this.mpos)
   }
 
-  exec(ctx: Context) {
-    let {center, th} = this.getInputs()
+  exec(ctx: MeshCtx) {
+    let { center, th } = this.getInputs()
 
     let tmat1 = new Matrix4()
     let tmat2 = new Matrix4()
@@ -552,8 +570,7 @@ export class RotateOp extends TransformOp<{th: FloatProperty}> {
         td.apply(matrix)
       }
     }
-
-    window.redraw_all()
+    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
   }
 }
 

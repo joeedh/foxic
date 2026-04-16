@@ -1025,7 +1025,7 @@ export class Mesh {
   makeElists() {
     for (let k in MeshTypes) {
       if (typeof k === 'string' && isNaN(parseFloat(k))) {
-        let type = parseInt(MeshTypes[k])
+        let type = MeshTypes[k as keyof typeof MeshTypes]
         this.elists[type] = new ElementArray(type)
       }
     }
