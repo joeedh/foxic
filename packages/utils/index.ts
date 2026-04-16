@@ -12,4 +12,5 @@ export const termPrint = util.termPrint
 export const isMobile = util.isMobile
 export const getClassParent = util.getClassParent
 export const printStack = util.print_stack
+export * from './eventEmitter'
 

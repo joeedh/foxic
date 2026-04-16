@@ -15,7 +15,7 @@ import { Icons } from '../assets/icon_enum'
 import { registerDataClass } from '../core/register'
 export const ToolModeClasses = [] as any[]
 
-export interface IToolModeConstructor<T extends ToolMode = ToolMode> {
+export interface IToolModeConstructor<T extends ToolMode<any> = ToolMode> {
     new(): T
     readonly toolModeDef: Readonly<IToolModeDef>
 }

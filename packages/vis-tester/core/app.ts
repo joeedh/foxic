@@ -22,6 +22,7 @@ import { IPathUXConstants } from 'path.ux/scripts/config/const'
 import { CanvasEditor, MainMenuBar } from '../editors'
 import '../editors'
 import { FileHeader } from 'path.ux/scripts/simple/file'
+import { PropertiesBag, type ITemplateDef } from './props'
 
 export interface IFileOptions {
   screen?: boolean
@@ -31,6 +32,7 @@ export interface IFileOptions {
 class MyFileExport extends FileHeader {
   model?: any
   screen?: any
+  settings?: any
 
   static STRUT = nstructjs.inlineRegister(
     this,
@@ -38,15 +40,23 @@ class MyFileExport extends FileHeader {
     MyFileExport {
       model: optional(abstract(Object));
       screen: optional(abstract(Object));
+      settings: optional(abstract(Object));
     }
     `,
   )
 
-  constructor(version?: number[], magic = '', flags = 0) {
+  constructor(
+    settings?: PropertiesBag<any, any>,
+    version?: number[],
+    magic = '',
+    flags = 0,
+  ) {
     super(version, magic, flags)
+    this.settings = settings
   }
 }
 export abstract class AppState<
+  SETTINGS extends ITemplateDef = {},
   DataModelRoot = unknown,
   CTX extends AppContext = AppContext,
 > {
@@ -58,14 +68,30 @@ export abstract class AppState<
 
   abstract readonly localStorageKey: string
   abstract readonly version: Readonly<[number, number, number]>
+  abstract readonly saveStartupOnSettingsChange: boolean
+  settings: PropertiesBag<SETTINGS, CTX>
+  private settingsTemplate: SETTINGS
 
-  constructor(ctxClass: any = AppContext) {
+  constructor(ctxClass: any = AppContext, settings: Readonly<SETTINGS>) {
+    this.settingsTemplate = settings
     this.ctx = new ctxClass(this) as unknown as CTX
+    this.settings = new PropertiesBag(settings)
     this.api = buildAPI()
     if (!this.api.hasStruct(ctxClass)) {
       ctxClass.defineAPI(this.api)
     }
     this.api.rootContextStruct = this.api.mapStruct(ctxClass)
+    this.onSettingsLoad()
+  }
+
+  onSettingsLoad() {
+    this.settings.patchTemplate(this.settingsTemplate)
+    this.settings.onChange = () => {
+      this.ctx.redraw_all()
+      if (this.saveStartupOnSettingsChange) {
+        this.saveLocalStorage()
+      }
+    }
   }
 
   createDefaultScreen() {
@@ -87,7 +113,11 @@ export abstract class AppState<
   }
 
   save(args: IFileOptions = {}) {
-    const file = new MyFileExport(Array.from(this.version), 'VIST')
+    const file = new MyFileExport(
+      this.settings,
+      Array.from(this.version),
+      'VIST',
+    )
 
     if (args.screen) file.screen = this.screen
     file.model = this.model
@@ -132,6 +162,8 @@ export abstract class AppState<
       this.screen.remove()
     }
 
+    this.settings = file.settings ?? this.settings
+    this.onSettingsLoad()
     this.model = file.model
     this.screen = file.screen
     this.screen.ctx = this.ctx
@@ -155,16 +187,22 @@ export abstract class AppState<
   saveLocalStorage() {
     const save = this.save({ json: true, screen: true }) as string
     localStorage[this.localStorageKey] = save
-    console.log('saved to local storgae', (save.length/1024).toFixed(2) + 'kb')
+    console.log(
+      'saved to local storgae',
+      (save.length / 1024).toFixed(2) + 'kb',
+    )
   }
 
   loadLocalStorage() {
     if (!(this.localStorageKey in localStorage)) return false
     try {
-      this.load(localStorage[this.localStorageKey], { json: true, screen: true })
+      this.load(localStorage[this.localStorageKey], {
+        json: true,
+        screen: true,
+      })
       return true
     } catch (error) {
-      util.print_stack(error as Error);
+      util.print_stack(error as Error)
       console.log('failed to load startup file')
     }
     return false

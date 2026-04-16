@@ -7534,7 +7534,7 @@ __export(vectormath_exports, {
   Vector4: () => Vector4
 });
 function createVector2(parent, structName) {
-  return class Vector27 extends parent {
+  return class Vector28 extends parent {
     0;
     1;
     [Symbol.iterator] = parent.prototype[Symbol.iterator];
@@ -7732,7 +7732,7 @@ function createVector2(parent, structName) {
       return d0 * d0 + d1 * d1;
     }
     copy() {
-      return new Vector27(this);
+      return new Vector28(this);
     }
     vectorLengthSqr() {
       return this.dot(this);
@@ -7832,7 +7832,7 @@ function createVector2(parent, structName) {
   };
 }
 function createVector3(parent, structName) {
-  return class Vector36 extends parent {
+  return class Vector37 extends parent {
     0;
     1;
     2;
@@ -8074,7 +8074,7 @@ function createVector3(parent, structName) {
       return d0 * d0 + d1 * d1 + d2 * d2;
     }
     copy() {
-      return new Vector36(this);
+      return new Vector37(this);
     }
     vectorLengthSqr() {
       return this.dot(this);
@@ -10077,10 +10077,10 @@ function consolelog(..._args) {
 function debugDomEvents() {
   const cbsymbol = /* @__PURE__ */ Symbol("event-callback");
   const thsymbol = /* @__PURE__ */ Symbol("debug-info");
-  let idgen3 = 0;
+  let idgen4 = 0;
   function init2(et) {
     if (!et[thsymbol]) {
-      et[thsymbol] = idgen3++;
+      et[thsymbol] = idgen4++;
     }
   }
   function getkey(et, type, options) {
@@ -35452,17 +35452,17 @@ var Container2 = class _Container extends UIBase2 {
         packflag |= PackFlags.FORCE_ROLLER_SLIDER;
       }
     }
-    let simple = packflag & PackFlags.SIMPLE_NUMSLIDERS || const_default.simpleNumSliders;
-    simple = simple && !(packflag & PackFlags.FORCE_ROLLER_SLIDER);
+    let simple2 = packflag & PackFlags.SIMPLE_NUMSLIDERS || const_default.simpleNumSliders;
+    simple2 = simple2 && !(packflag & PackFlags.FORCE_ROLLER_SLIDER);
     const extraTextBox = const_default.useNumSliderTextboxes && !(packflag & PackFlags.NO_NUMSLIDER_TEXTBOX);
     if (extraTextBox) {
-      if (simple) {
+      if (simple2) {
         ret = UIBase2.createElement("numslider-simple-x");
       } else {
         ret = UIBase2.createElement("numslider-textbox-x");
       }
     } else {
-      if (simple) {
+      if (simple2) {
         ret = UIBase2.createElement("numslider-simple-x");
       } else {
         ret = UIBase2.createElement("numslider-x");
@@ -46047,7 +46047,7 @@ var AreaDragTool = class extends ToolBase {
     const cy = sa.pos[1] + sa.size[1] * 0.5;
     const color = this.color = "rgba(200, 200, 200, 0.55)";
     const hcolor = this.hcolor = "rgba(230, 230, 230, 0.75)";
-    let idgen3 = 0;
+    let idgen4 = 0;
     const boxes = this.boxes;
     const box = (x, y, sz2, horiz, t, side) => {
       const b = this.overdraw.rect([x - sz2[0] * 0.5, y - sz2[1] * 0.5], sz2, color);
@@ -46055,7 +46055,7 @@ var AreaDragTool = class extends ToolBase {
       boxes.push(b);
       b.sarea = sa;
       const style = document.createElement("style");
-      const cls = `mybox_${idgen3++}`;
+      const cls = `mybox_${idgen4++}`;
       b.horiz = horiz;
       b.t = t;
       b.side = side;
@@ -52768,7 +52768,6 @@ var EditorSideBar = class extends Container2 {
       this._height = h;
       this.style["height"] = "" + this._height + "px";
       this.flushUpdate();
-      console.log("Sidebar height update");
     }
   }
   setCSS() {
@@ -53010,6 +53009,389 @@ var EmptyToolMode = class extends ToolMode {
 };
 ToolMode.register(EmptyToolMode);
 
+// core/props.ts
+var PropTypeMap = {
+  float: PropTypes.FLOAT,
+  int: PropTypes.INT,
+  vec2: PropTypes.VEC2,
+  vec3: PropTypes.VEC3,
+  vec4: PropTypes.VEC4,
+  color3: PropTypes.VEC3,
+  color4: PropTypes.VEC4,
+  string: PropTypes.STRING,
+  enum: PropTypes.ENUM,
+  flags: PropTypes.FLAG,
+  bool: PropTypes.BOOL
+};
+for (let k in PropTypeMap) {
+  if (k !== "color3" && k !== "color4") {
+    PropTypeMap[PropTypeMap[k]] = k;
+  }
+}
+var idgen3 = 0;
+var PropertiesBag = class {
+  static STRUCT = struct_default.inlineRegister(
+    this,
+    `
+    PropertiesBag {
+      _props : array(abstract(ToolProperty)) | this._save();
+    }
+  `
+  );
+  _save() {
+    return this._props;
+  }
+  static defineAPI(api2) {
+    return api2.mapStructCustom(this, this.getStruct.bind(this));
+  }
+  static getStruct(obj2) {
+    return obj2._struct;
+  }
+  ["constructor"] = this["constructor"];
+  onChange;
+  sourceTemplate;
+  //these two are used by props widget to detect updates
+  _updateGen = 0;
+  _id = idgen3++;
+  _struct;
+  _props;
+  boundProps;
+  _propMap = /* @__PURE__ */ new Map();
+  constructor(template) {
+    this._props = [];
+    this._struct = new DataStruct2();
+    this.sourceTemplate = {};
+    this.boundProps = new Proxy(
+      {},
+      {
+        get: (target, key) => {
+          return this._propMap.get(key)?.getValue();
+        },
+        set: (target, key, value) => {
+          this._propMap.get(key)?.setValue(value);
+          return this._propMap.has(key);
+        },
+        has: (target, key) => this._propMap.has(key)
+      }
+    );
+    if (template) {
+      this.loadTemplate(template);
+    }
+  }
+  _getProp(name2) {
+  }
+  get asFullyTypedBag() {
+    return this.boundProps;
+  }
+  _getTemplValue(item) {
+    let val = item.value;
+    if (val === void 0) {
+      if (item.type === "string") {
+        val = "";
+      } else if (item.type === "vec2") {
+        val = [0, 0];
+      } else if (item.type === "vec3" || item.type === "color3") {
+        val = [0, 0, 0];
+      } else if (item.type === "vec4" || item.type === "color4") {
+        val = [0, 0, 0, 1];
+      } else {
+        val = 0;
+      }
+    }
+    return val;
+  }
+  #getPropDefs(templ, flat_templ = {}) {
+    for (let k in templ) {
+      if (typeof k !== "string") {
+        continue;
+      }
+      let v = templ[k];
+      if (typeof v === "object" && v.type === "panel") {
+        this.#getPropDefs(v.children, flat_templ);
+      } else {
+        flat_templ[k] = v;
+      }
+    }
+    return flat_templ;
+  }
+  patchTemplate(templ) {
+    this.sourceTemplate = templ;
+    this._updateGen++;
+    let flat_templ = this.#getPropDefs(templ);
+    for (let k in flat_templ) {
+      let item = flat_templ[k];
+      const genericThis = this;
+      if (genericThis[k] === void 0) {
+        genericThis[k] = this._getTemplValue(item);
+      }
+    }
+    let st = this._struct;
+    const oldPaths = st.pathmap;
+    const oldProps = this._props;
+    const oldPropMap = this._propMap;
+    this._props = [];
+    this._propMap = /* @__PURE__ */ new Map();
+    st.clear();
+    Object.keys(flat_templ).forEach((k) => {
+      let item = flat_templ[k];
+      let uiname = item.uiName ?? ToolProperty.makeUIName(k);
+      let descr = item.description ?? "";
+      let def;
+      const path = "boundProps." + k;
+      if (item.type === "float") {
+        def = st.float(path, k, uiname, descr);
+      } else if (item.type === "int") {
+        def = st.int(path, k, uiname, descr);
+      } else if (item.type === "vec2") {
+        def = st.vec2(path, k, uiname, descr);
+      } else if (item.type === "vec3") {
+        def = st.vec3(path, k, uiname, descr);
+      } else if (item.type === "vec4") {
+        def = st.vec4(path, k, uiname, descr);
+      } else if (item.type === "color3") {
+        def = st.color3(path, k, uiname, descr);
+      } else if (item.type === "color4") {
+        def = st.color4(path, k, uiname, descr);
+      } else if (item.type === "string") {
+        def = st.string(path, k, uiname, descr);
+      } else if (item.type === "enum") {
+        def = st.enum(path, k, item.def, uiname, descr);
+      } else if (item.type === "flag") {
+        def = st.flags(path, k, item.def, uiname, descr);
+      } else if (item.type === "bool") {
+        def = st.bool(path, k, uiname, descr);
+      }
+      if (def === void 0) {
+        console.warn("properties template error", k, item);
+        return;
+      }
+      const defProp = def.data;
+      const oldProp = oldPropMap.get(defProp.apiname);
+      if (oldProp !== void 0 && oldProp.type === defProp.type) {
+        defProp.setValue(oldProp.getValue());
+      } else if (item.value !== void 0) {
+        defProp.setValue(item.value);
+      }
+      if (oldProp !== void 0 && oldProp.type !== defProp.type) {
+        console.warn(
+          "Property type mismatch during load:",
+          k,
+          oldProp.type,
+          defProp.type
+        );
+      }
+      if (item.type === "enum" || item.type === "flag") {
+        def.checkStrip(item.checkStrip ?? false);
+      }
+      if (!def) {
+        console.error("Unknown property type " + item.type, item);
+        return;
+      }
+      if (item.onchange) {
+        def.on("change", item.onchange);
+      }
+      const this2 = this;
+      def.on("change", function() {
+        if (this2.onChange !== void 0) {
+          this2.onChange(k);
+        }
+      });
+      this._props.push(defProp);
+      this._propMap.set(defProp.apiname, defProp);
+      let pr = PropTypes;
+      let numberTypes = pr.FLOAT | pr.INT | pr.VEC2 | pr.VEC3 | pr.VEC4;
+      defProp.apiname = k;
+      if (item.type === "float" || item.type === "vec2" || item.type === "vec3" || item.type === "vec4") {
+        const numberCast = defProp;
+        for (let key of FloatConstrinats) {
+          numberCast[key] = item[key];
+        }
+      } else if (item.type === "int") {
+        const numberCast = defProp;
+        for (let key of IntegerConstraints) {
+          numberCast[key] = item[key];
+        }
+      }
+      if (defProp.type & numberTypes) {
+        const numberCast = defProp;
+        const numberItem = item;
+        numberCast.baseUnit = numberCast.displayUnit = "none";
+        if (numberItem.slider) {
+          def.simpleSlider();
+        }
+        if (numberItem.unit !== void 0) {
+          numberCast.baseUnit = numberCast.displayUnit = numberItem.unit;
+        }
+        if (numberItem.min !== void 0) {
+          numberCast.range[0] = numberItem.min;
+        }
+        if (numberItem.max !== void 0) {
+          numberCast.range[1] = numberItem.max;
+        }
+        if (numberItem.uiMin !== void 0) {
+          if (!numberCast.uiRange) {
+            numberCast.uiRange = Array.from(numberCast.range);
+          }
+          numberCast.uiRange[0] = numberItem.uiMin;
+        }
+        if (numberItem.uiMax !== void 0) {
+          if (!numberCast.uiRange) {
+            numberCast.uiRange = Array.from(numberCast.range);
+          }
+          numberCast.uiRange[1] = numberItem.uiMax;
+        }
+      }
+    });
+  }
+  loadTemplate(templ) {
+    this.sourceTemplate = { ...templ };
+    this.patchTemplate(this.sourceTemplate);
+  }
+  static templateFromProps(props) {
+    let templ = {};
+    for (let prop of props) {
+      let item = {};
+      templ[prop.apiname] = item;
+      let type = PropTypeMap[prop.type];
+      if (prop.subtype === PropSubTypes2.COLOR) {
+        type = prop.type === PropTypes.VEC3 ? "color3" : "color4";
+      }
+      item.type = type;
+      item.uiName = prop.uiname;
+      item.value = prop.getValue();
+      let pr = PropTypes;
+      let numberTypes = pr.FLOAT | pr.INT | pr.VEC2 | pr.VEC3 | pr.VEC4;
+      if (prop.type & numberTypes) {
+        const numProp = prop;
+        for (let key of NumberConstraints) {
+          if (prop[key] === void 0) {
+            continue;
+          }
+          if (key === "range") {
+            ;
+            [item.min, item.max] = numProp.range;
+          } else if (key === "uiRange") {
+            ;
+            [item.uiMin, item.uiMax] = numProp.uiRange;
+          } else {
+            item[key] = numProp[key];
+          }
+        }
+      }
+    }
+    return templ;
+  }
+  loadSTRUCT(reader) {
+    reader(this);
+    const oldProps = this._props;
+    console.log(oldProps);
+    this._props = [];
+    let templ = this.constructor.templateFromProps(oldProps);
+    this.loadTemplate(templ);
+    for (const prop of oldProps) {
+      const boundAny = this.boundProps;
+      boundAny[prop.apiname] = prop.getValue();
+    }
+  }
+  testStruct() {
+    let json = struct_default.writeJSON(this);
+    console.log(json);
+    let obj2 = struct_default.readJSON(json, this.constructor);
+    console.log(obj2);
+    return obj2;
+  }
+};
+registerDataClass(PropertiesBag);
+var PropsEditor = class extends RowFrame {
+  needsRebuild = true;
+  _last_update_key = "";
+  constructor() {
+    super();
+  }
+  static define() {
+    return {
+      tagname: "props-bag-editor-x"
+    };
+  }
+  init() {
+    super.init();
+    if (this.ctx && this.hasAttribute("datapath")) {
+      this.rebuild();
+    }
+  }
+  get columns() {
+    if (this.hasAttribute("columns")) {
+      return parseInt(this.getAttribute("columns"));
+    } else {
+      return 1;
+    }
+  }
+  set columns(v) {
+    this.setAttribute("columns", "" + v);
+  }
+  rebuild() {
+    let uidata = saveUIData(this, "props editor");
+    let colsCount = this.columns;
+    let path = this.getAttribute("datapath");
+    let props = this.ctx.api.getValue(this.ctx, path);
+    if (!props) {
+      console.warn("Bad datapath", path);
+      return;
+    }
+    this.needsRebuild = false;
+    this.dataPrefix = path;
+    this.clear();
+    console.log("Columns", colsCount);
+    const cols = new Array(colsCount).fill(1).map(() => this.col());
+    let cur = 0;
+    const panels = /* @__PURE__ */ new Map();
+    const recurse = (getContainer, templ, depth = 0) => {
+      for (let k in templ) {
+        let v = templ[k];
+        if (typeof v === "object" && "type" in v && v.type === "panel") {
+          let panel = panels.get(v.panel);
+          if (panel === void 0) {
+            panel = getContainer().panel(
+              ToolProperty.makeUIName(v.panel)
+            );
+            panels.set(v.panel, panel);
+          }
+          recurse(() => panel, v.children, depth + 1);
+        } else {
+          getContainer().prop(k);
+        }
+      }
+    };
+    recurse(() => {
+      let ci = cur++ % colsCount;
+      return cols[ci];
+    }, props.sourceTemplate);
+    loadUIData(this, uidata);
+  }
+  update() {
+    super.update();
+    if (!this.ctx) {
+      return;
+    }
+    let path = this.getAttribute("datapath");
+    let props = this.ctx.api.getValue(this.ctx, path);
+    if (!props) {
+      console.warn("Bad datapath", path);
+      return;
+    }
+    let key = "" + props._updateGen + ":" + props._id + ":" + props._props.length;
+    if (key !== this._last_update_key) {
+      this._last_update_key = key;
+      this.needsRebuild = true;
+    }
+    if (this.needsRebuild) {
+      this.rebuild();
+    }
+  }
+};
+UIBase2.register(PropsEditor);
+registerDataClass(PropertiesBag);
+
 // editors/canvasEditor.ts
 var CanvasEditor = class extends Editor2 {
   static STRUCT = struct_default.inlineRegister(
@@ -53023,6 +53405,7 @@ var CanvasEditor = class extends Editor2 {
   canvas;
   toolmode;
   sidebar;
+  needsSidebarRebuild = false;
   get toolmode_i() {
     return ToolModeClasses.indexOf(this.toolmode?.constructor);
   }
@@ -53035,6 +53418,7 @@ var CanvasEditor = class extends Editor2 {
     this.canvas = document.createElement("canvas");
   }
   switchToolMode(cls) {
+    this.needsSidebarRebuild = true;
     if (this.toolmode !== void 0) {
       this.toolmode.onInactive();
     }
@@ -53047,16 +53431,36 @@ var CanvasEditor = class extends Editor2 {
   init() {
     super.init();
     this.toolmode = this.switchToolMode(ToolModeClasses[0]);
-    this.makeSideBar();
+    this.rebuildSideBar();
     this.shadow.appendChild(this.canvas);
   }
-  makeSideBar() {
-    const sidebar = UIBase2.createElement(EditorSideBar.define().tagname);
+  rebuildSideBar() {
+    this.needsSidebarRebuild = false;
+    let uidata;
+    if (this.sidebar !== void 0) {
+      uidata = saveUIData(this, "editor sidebar");
+      this.sidebar.remove();
+    }
+    const sidebar = UIBase2.createElement(
+      EditorSideBar.define().tagname
+    );
     this.sidebar = sidebar;
     this.shadow.appendChild(sidebar);
     const tabs = this.sidebar.tabs("right");
-    const tab2 = tabs.tab("Properties");
-    tab2.label("test");
+    let tab2 = tabs.tab("Properties");
+    const props = UIBase2.createElement(
+      PropsEditor.define().tagname
+    );
+    props.setAttribute("datapath", "_settings");
+    tab2.add(props);
+    tab2 = tabs.tab("Tool");
+    const toolmode = this.toolmode;
+    if (toolmode?.buildSideBar) {
+      toolmode.buildSideBar(tab2);
+    }
+    if (uidata !== void 0) {
+      loadUIData(this, uidata);
+    }
     return { sidebar, tabs };
   }
   makeHeader(container, add_note_area, make_draggable) {
@@ -53071,6 +53475,12 @@ var CanvasEditor = class extends Editor2 {
   }
   update() {
     super.update();
+    if (this.ctx === void 0) {
+      return;
+    }
+    if (this.needsSidebarRebuild) {
+      this.rebuildSideBar();
+    }
     this.push_ctx_active();
     this.toolmode?.onUpdate();
     this.pop_ctx_active();
@@ -53085,7 +53495,12 @@ var CanvasEditor = class extends Editor2 {
   }
   static defineAPI(api2) {
     const st = api2.mapStruct(this);
-    st.enum("toolmode_i", "toolmode", ToolMode.createToolModeEnum(), "Tool Mode");
+    st.enum(
+      "toolmode_i",
+      "toolmode",
+      ToolMode.createToolModeEnum(),
+      "Tool Mode"
+    );
     return st;
   }
 };
@@ -53105,6 +53520,22 @@ function loadPropertyForLocked(ctx2, name2, value) {
   return value;
 }
 var AppContext4 = class {
+  static defineAPI(api2) {
+    const st = api2.mapStruct(this);
+    st.dynamicStruct("last_tool", "last_tool", "Last Tool");
+    st.struct(
+      "propCache",
+      "toolDefaults",
+      "Tool Defaults",
+      api2.mapStruct(ToolPropertyCache)
+    );
+    st.dynamicStruct("model", "model", "Model");
+    st.struct("canvas", "canvas", "Canvas", api2.mapStruct(CanvasEditor));
+    st.dynamicStruct("_settings", "_settings", "Settings");
+    PropertiesBag.defineAPI(api2);
+    buildToolSysAPI(api2, true);
+    return st;
+  }
   constructor(state) {
     this.state = state;
   }
@@ -53152,19 +53583,13 @@ var AppContext4 = class {
   get canvas() {
     return contextWrangler.getLastArea(CanvasEditor);
   }
-  static defineAPI(api2) {
-    const st = api2.mapStruct(this);
-    st.dynamicStruct("last_tool", "last_tool", "Last Tool");
-    st.struct(
-      "propCache",
-      "toolDefaults",
-      "Tool Defaults",
-      api2.mapStruct(ToolPropertyCache)
-    );
-    st.dynamicStruct("model", "model", "Model");
-    st.struct("canvas", "canvas", "Canvas", api2.mapStruct(CanvasEditor));
-    buildToolSysAPI(api2, true);
-    return st;
+  get settings() {
+    return this.state.settings.asFullyTypedBag;
+  }
+  get _settings() {
+    return this.state.settings;
+  }
+  redraw_all() {
   }
 };
 Context.register(AppContext4);
@@ -53678,30 +54103,47 @@ var theme2 = {
 var MyFileExport = class extends FileHeader {
   model;
   screen;
+  settings;
   static STRUT = struct_default.inlineRegister(
     this,
     `
     MyFileExport {
       model: optional(abstract(Object));
       screen: optional(abstract(Object));
+      settings: optional(abstract(Object));
     }
     `
   );
-  constructor(version, magic = "", flags = 0) {
+  constructor(settings, version, magic = "", flags = 0) {
     super(version, magic, flags);
+    this.settings = settings;
   }
 };
 var AppState2 = class {
   toolstack = new ToolStack();
   api;
   ctx;
-  constructor(ctxClass = AppContext4) {
+  settings;
+  settingsTemplate;
+  constructor(ctxClass = AppContext4, settings) {
+    this.settingsTemplate = settings;
     this.ctx = new ctxClass(this);
+    this.settings = new PropertiesBag(settings);
     this.api = buildAPI();
     if (!this.api.hasStruct(ctxClass)) {
       ctxClass.defineAPI(this.api);
     }
     this.api.rootContextStruct = this.api.mapStruct(ctxClass);
+    this.onSettingsLoad();
+  }
+  onSettingsLoad() {
+    this.settings.patchTemplate(this.settingsTemplate);
+    this.settings.onChange = () => {
+      this.ctx.redraw_all();
+      if (this.saveStartupOnSettingsChange) {
+        this.saveLocalStorage();
+      }
+    };
   }
   createDefaultScreen() {
     this.screen = UIBase2.createElement(AppScreen.define().tagname);
@@ -53716,7 +54158,11 @@ var AppState2 = class {
   doMigrations(fileVersion, model) {
   }
   save(args = {}) {
-    const file = new MyFileExport(Array.from(this.version), "VIST");
+    const file = new MyFileExport(
+      this.settings,
+      Array.from(this.version),
+      "VIST"
+    );
     if (args.screen) file.screen = this.screen;
     file.model = this.model;
     if (args.json) {
@@ -53752,6 +54198,8 @@ var AppState2 = class {
       this.screen.unlisten();
       this.screen.remove();
     }
+    this.settings = file.settings ?? this.settings;
+    this.onSettingsLoad();
     this.model = file.model;
     this.screen = file.screen;
     this.screen.ctx = this.ctx;
@@ -53773,12 +54221,18 @@ var AppState2 = class {
   saveLocalStorage() {
     const save = this.save({ json: true, screen: true });
     localStorage[this.localStorageKey] = save;
-    console.log("saved to local storgae", (save.length / 1024).toFixed(2) + "kb");
+    console.log(
+      "saved to local storgae",
+      (save.length / 1024).toFixed(2) + "kb"
+    );
   }
   loadLocalStorage() {
     if (!(this.localStorageKey in localStorage)) return false;
     try {
-      this.load(localStorage[this.localStorageKey], { json: true, screen: true });
+      this.load(localStorage[this.localStorageKey], {
+        json: true,
+        screen: true
+      });
       return true;
     } catch (error2) {
       util_exports.print_stack(error2);
@@ -53867,14 +54321,26 @@ var MyModel = class {
   }
 };
 registerDataClass(MyModel);
+var MySettingsTemplate = {
+  prop1: { type: "string", value: "string!" },
+  prop2: { type: "float", value: 1 },
+  panel: {
+    type: "panel",
+    panel: "Panel!",
+    children: {
+      prop3: { type: "bool", value: false }
+    }
+  }
+};
 var MyContext = class extends AppContext4 {
   //
 };
 var AppTest = class extends AppState2 {
   localStorageKey = "TEST1";
   version = [0, 0, 1];
+  saveStartupOnSettingsChange = true;
   constructor() {
-    super(MyContext);
+    super(MyContext, MySettingsTemplate);
   }
   createModel() {
     return new MyModel();

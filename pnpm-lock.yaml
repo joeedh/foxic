@@ -48,6 +48,22 @@ importers:
         specifier: workspace:*
         version: link:../path.ux
 
+  packages/mesh:
+    dependencies:
+      '@typescript/native-preview':
+        specifier: 7.0.0-dev.20260414.1
+        version: 7.0.0-dev.20260414.1
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+    devDependencies:
+      '@gametest/utils':
+        specifier: workspace:*
+        version: link:../utils
+      path.ux:
+        specifier: workspace:*
+        version: link:../path.ux
+
   packages/path.ux:
     devDependencies:
       nstructjs:

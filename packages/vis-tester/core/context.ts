@@ -12,6 +12,7 @@ import {
 import type { AppState } from './app'
 import { CanvasEditor, Editor } from '../editors'
 import { registerDataClass } from './register'
+import { ITemplateDef, PropertiesBag } from './props'
 
 function savePropertyForLocked(
   ctx: AppContext,
@@ -35,10 +36,32 @@ function loadPropertyForLocked(
   return value
 }
 
-export class AppContext<DataModelRoot = unknown> implements ILockableCtx {
-  declare state: AppState
+export class AppContext<
+  DataModelRoot = unknown,
+  SettingsTempl extends ITemplateDef = {},
+> implements ILockableCtx {
+  declare state: AppState<SettingsTempl, DataModelRoot>
 
-  constructor(state: AppState) {
+  static defineAPI(api: DataAPI) {
+    const st = api.mapStruct(this)
+    st.dynamicStruct('last_tool', 'last_tool', 'Last Tool')
+    st.struct(
+      'propCache',
+      'toolDefaults',
+      'Tool Defaults',
+      api.mapStruct(ToolPropertyCache),
+    )
+    st.dynamicStruct('model', 'model', 'Model')
+    st.struct('canvas', 'canvas', 'Canvas', api.mapStruct(CanvasEditor))
+    st.dynamicStruct('_settings', '_settings', 'Settings')
+
+    PropertiesBag.defineAPI(api)
+    
+    buildToolSysAPI(api, true)
+    return st
+  }
+
+  constructor(state: AppState<SettingsTempl, DataModelRoot>) {
     this.state = state
   }
 
@@ -99,20 +122,16 @@ export class AppContext<DataModelRoot = unknown> implements ILockableCtx {
     return contextWrangler.getLastArea(CanvasEditor)
   }
 
-  static defineAPI(api: DataAPI) {
-    const st = api.mapStruct(this)
-    st.dynamicStruct('last_tool', 'last_tool', 'Last Tool')
-    st.struct(
-      'propCache',
-      'toolDefaults',
-      'Tool Defaults',
-      api.mapStruct(ToolPropertyCache),
-    )
-    st.dynamicStruct('model', 'model', 'Model')
-    st.struct('canvas', 'canvas', 'Canvas', api.mapStruct(CanvasEditor))
-    
-    buildToolSysAPI(api, true)
-    return st
+  get settings() {
+    return this.state.settings.asFullyTypedBag
+  }
+
+  get _settings() {
+    return this.state.settings
+  }
+
+  redraw_all() {
+    //
   }
 }
 

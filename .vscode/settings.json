@@ -3,11 +3,20 @@
         "areaname",
         "cachering",
         "descr",
+        "eidgen",
+        "elists",
+        "gametest",
+        "keystr",
+        "LOOPLIST",
+        "loopstack",
         "nstructjs",
+        "regen",
         "SDEF",
+        "SELECTMASK",
         "tileset",
         "toolmode",
         "toolstack",
+        "uidata",
         "uiname"
     ]
 }

@@ -144,7 +144,6 @@ export class EditorSideBar<CTX extends AppContext> extends Container<CTX> {
       this._height = h
       this.style['height'] = '' + this._height + 'px'
       this.flushUpdate()
-      console.log('Sidebar height update')
     }
   }
 
@@ -177,6 +176,7 @@ export class EditorSideBar<CTX extends AppContext> extends Container<CTX> {
     this._width = this._closed ? this.closedWidth : this.openWidth
     this._icon!.icon = this._closed ? Icons.SHIFT_LEFT : Icons.SHIFT_RIGHT
     this.setCSS()
+
     return this
   }
 }

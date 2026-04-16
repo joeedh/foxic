@@ -1,12 +1,11 @@
 {
-    "name": "@gametest/vis-tester-base",
+    "name": "@gametest/meshlib",
     "scripts": {
-        "typecheck": "npx tsgo --noEmit",
-        "serv": "node serv.mjs"
+        "typecheck": "npx tsgo --noEmit"
     },
     "devDependencies": {
-        "esbuild": "^0.28.0",
-        "path.ux": "workspace:*"
+        "path.ux": "workspace:*",
+        "@gametest/utils": "workspace:*"
     },
     "dependencies": {
         "@typescript/native-preview": "7.0.0-dev.20260414.1",

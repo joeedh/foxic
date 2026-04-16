@@ -2,6 +2,7 @@ import { DataAPI, nstructjs } from 'path.ux'
 import { AppState } from './core/app'
 import { AppContext } from './core/context'
 import { registerDataClass } from './core/register'
+import { ITemplateDef } from './core/props'
 
 class MyModel {
   static STRUCT = nstructjs.inlineRegister(
@@ -23,16 +24,33 @@ class MyModel {
 }
 registerDataClass(MyModel)
 
-class MyContext extends AppContext {
+const MySettingsTemplate = {
+  prop1: { type: 'string', value: 'string!' },
+  prop2: { type: 'float', value: 1.0 },
+  panel: {
+    type: 'panel',
+    panel: 'Panel!',
+    children: {
+      prop3: { type: 'bool', value: false },
+    },
+  },
+} as const
+
+class MyContext extends AppContext<MyModel, typeof MySettingsTemplate> {
   //
 }
 
-export class AppTest extends AppState<MyModel> {
+export class AppTest extends AppState<
+  typeof MySettingsTemplate,
+  MyModel,
+  MyContext
+> {
   readonly localStorageKey = 'TEST1'
   readonly version = [0, 0, 1] as const
+  readonly saveStartupOnSettingsChange = true
 
   constructor() {
-    super(MyContext)
+    super(MyContext, MySettingsTemplate)
   }
 
   createModel() {
