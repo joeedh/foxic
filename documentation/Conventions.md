@@ -16,7 +16,7 @@
 
 # Sprites and Animation
 
-* Spritesheets use PixiJS `Spritesheet` class with named frames and animation groups
-* Frame names are defined in `src/rendering/SpriteManager.ts` via `buildSheetData()`
+* Spritesheets use the custom `SpriteSheet` class (`src/rendering/SpriteSheet.ts`) with `SheetDef` grid definitions
+* Frame data is defined in `src/rendering/AssetLoader.ts` via `new SpriteSheet()` constructor calls
 * Use `AnimationController` for frame-based animation with `ticksPerFrame` timing
-* Generated sprites use magenta (#FF00FF) backgrounds — `ChromaKeyFilter` removes them
+* Generated sprites use magenta (#FF00FF) backgrounds — `WebGLRenderer.bakeChromaKey()` removes them at load time via an FBO render pass

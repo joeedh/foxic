@@ -53,6 +53,8 @@ export class Player implements GameEntity {
       groundAngle: 0,
       onGround: false,
       pushing: false,
+      controlLockTimer: 0,
+      currentDepth: 0,
     }
 
     this.anim = new AnimationController()
@@ -305,6 +307,7 @@ export class Player implements GameEntity {
 
     const drawW = PLAYER_WIDTH * 2
     const drawH = PLAYER_HEIGHT * 1.5
+    const rotation = this.physics.onGround ? -this.physics.groundAngle : 0
     renderer.drawFrame(
       frame,
       this.physics.x - drawW / 2,
@@ -314,6 +317,7 @@ export class Player implements GameEntity {
       {
         alpha,
         flipX: !this.facingRight,
+        rotation,
       },
     )
   }

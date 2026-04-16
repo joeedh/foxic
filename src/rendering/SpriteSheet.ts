@@ -1,4 +1,4 @@
-import type { Texture } from "./WebGL/texture"
+import type { Texture } from './WebGL/texture'
 
 export interface Frame {
   texture: Texture

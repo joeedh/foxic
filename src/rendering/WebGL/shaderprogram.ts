@@ -84,7 +84,7 @@ export type AttrTypeDef = {
   size: number
 }
 export type UniformSet<SDEF extends IShaderDef> = Partial<
-  UniformsFromDef<SDEF["uniforms"]>
+  UniformsFromDef<SDEF['uniforms']>
 >
 
 /** definition of shader uniforms */
@@ -97,7 +97,7 @@ export type AttrBlock = { [k: string]: AttrTypeDef }
  * if a member is 'defineOnly' it should produce `#define KEY` only,
  * otherwise it should do `#define KEY VALUE`
  */
-export type MacroDefinesBlock = { [key: string]: string | "defineOnly" }
+export type MacroDefinesBlock = { [key: string]: string | 'defineOnly' }
 
 /** note: all shaders are required to be glsl 300 */
 export interface IShaderDef<
@@ -111,7 +111,7 @@ export interface IShaderDef<
 }
 
 export type UniformsFromDef<T extends UniformBlock> = {
-  [k in keyof T]: UniformValueFor<T[k]["type"]>
+  [k in keyof T]: UniformValueFor<T[k]['type']>
 }
 
 /** Maps a GLType to the corresponding WebGL enum constant. */

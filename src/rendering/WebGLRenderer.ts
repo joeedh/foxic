@@ -1,10 +1,10 @@
-import type { Frame } from "./SpriteSheet"
-import { ShaderProgramBase } from "./WebGL/shaderprogram"
-import { GPUDrawElements } from "./WebGL/gpuDrawElements"
-import { Texture } from "./WebGL/texture"
-import { SpriteBatch } from "./SpriteBatch"
-import type { RenderStats } from "./SpriteBatch"
-import { chromakeyDef } from "./spriteShaders"
+import type { Frame } from './SpriteSheet'
+import { ShaderProgramBase } from './WebGL/shaderprogram'
+import { GPUDrawElements } from './WebGL/gpuDrawElements'
+import { Texture } from './WebGL/texture'
+import { SpriteBatch } from './SpriteBatch'
+import type { RenderStats } from './SpriteBatch'
+import { chromakeyDef } from './spriteShaders'
 
 export { Texture }
 export type { RenderStats }
@@ -30,7 +30,7 @@ export class WebGLRenderer {
 
   private batch: SpriteBatch
   private chromakeyShader: ShaderProgramBase<typeof chromakeyDef>
-  private chromaBatch: GPUDrawElements<typeof chromakeyDef["attrs"]>
+  private chromaBatch: GPUDrawElements<(typeof chromakeyDef)['attrs']>
   private whiteTexture: Texture
   private bgColor: [number, number, number]
   private logicalWidth: number
@@ -54,18 +54,18 @@ export class WebGLRenderer {
     this.bgColor = bgColor
     this.logicalWidth = width
     this.logicalHeight = height
-    this.canvas = document.createElement("canvas")
+    this.canvas = document.createElement('canvas')
     const dpr = window.devicePixelRatio || 1
     this.canvas.width = width * dpr
     this.canvas.height = height * dpr
     this.canvas.style.width = `${width}px`
     this.canvas.style.height = `${height}px`
 
-    const gl = this.canvas.getContext("webgl2", {
+    const gl = this.canvas.getContext('webgl2', {
       alpha: false,
       antialias: false,
     })
-    if (!gl) throw new Error("WebGL2 not supported")
+    if (!gl) throw new Error('WebGL2 not supported')
     this.gl = gl
 
     gl.viewport(0, 0, this.canvas.width, this.canvas.height)
@@ -373,7 +373,7 @@ export class WebGLRenderer {
 
   async loadTexture(url: string): Promise<Texture> {
     const img = new Image()
-    img.crossOrigin = "anonymous"
+    img.crossOrigin = 'anonymous'
     img.src = url
     await img.decode()
     const texture = new Texture(this.gl, 0, 0)
@@ -383,12 +383,12 @@ export class WebGLRenderer {
 
   createTextureFromCanvas(canvas: HTMLCanvasElement): Texture {
     const texture = new Texture(this.gl, canvas.width, canvas.height)
-    texture.uploadMedia(this.gl, canvas, { filter: "linear" })
+    texture.uploadMedia(this.gl, canvas, { filter: 'linear' })
     return texture
   }
 
   updateTextureFromCanvas(texture: Texture, canvas: HTMLCanvasElement): void {
-    texture.uploadMedia(this.gl, canvas, { filter: "linear" })
+    texture.uploadMedia(this.gl, canvas, { filter: 'linear' })
   }
 
   deleteTexture(texture: Texture): void {

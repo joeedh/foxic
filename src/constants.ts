@@ -41,3 +41,7 @@ export const PLAYER_WIDTH = 20
 export const PLAYER_HEIGHT = 40
 export const PLAYER_RADIUS = 10 // half-width for sensors
 export const PLAYER_HEIGHT_ROLLING = 30
+
+// Loop physics
+export const FALL_OFF_SPEED = 2.5
+export const CONTROL_LOCK_FRAMES = 30

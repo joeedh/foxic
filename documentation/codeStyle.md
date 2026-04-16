@@ -89,7 +89,7 @@ e.g. `import {} from 'my-test-module'`.  Imports to non-TS JS modules however sh
 
 Use the inline nstructjs pattern, e.g.
 
-```\typescript
+```typescript
 class MyClass {
   static STRUCT = nstructjs.inlineRegister(this, `
   MyClass {
@@ -103,7 +103,7 @@ class MyClass {
 
 Do not use:
 
-```\typescript
+```typescript
 class MyClass {
   property: int
 }
@@ -113,3 +113,4 @@ MyClass {
 }
 nstructjs.register(MyClass);
 `
+```

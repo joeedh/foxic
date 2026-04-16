@@ -1,0 +1,14 @@
+{
+    "name": "@gametest/math",
+    "scripts": {
+        "typecheck": "npx tsgo --noEmit"
+    },
+    "devDependencies": {
+        "path.ux": "workspace:*",
+        "@gametest/utils": "workspace:*"
+    },
+    "dependencies": {
+        "@typescript/native-preview": "7.0.0-dev.20260414.1",
+        "typescript": "^6.0.2"
+    }
+}

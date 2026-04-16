@@ -60,7 +60,7 @@ export class GameScene implements Scene {
       if (ring.active) {
         ring.update(_dt)
         const ground = tileMap.getGroundHeight(ring.x, ring.y, 8)
-        if (ground !== null && ring.y >= ground.y) {
+        if (ground !== undefined && ring.y >= ground.y) {
           ring.bounce(ground.y)
         }
       }

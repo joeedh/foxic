@@ -1,0 +1,6 @@
+{
+    "name": "@gametest/webgl",
+    "devDependencies": {
+        "@gametest/utils": "workspace:*"
+    }
+}

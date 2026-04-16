@@ -7,6 +7,7 @@ import { Ring } from '../entities/Ring'
 import { EnemyCrab } from '../entities/EnemyCrab'
 import { EnemyBee } from '../entities/EnemyBee'
 import { Spring } from '../entities/Spring'
+import { DepthTrigger } from '../entities/DepthTrigger'
 import { Camera } from '../camera'
 import { TILE_SIZE } from '../constants'
 import type { WebGLRenderer } from '../rendering/WebGLRenderer'
@@ -49,7 +50,7 @@ export function loadLevel(def: LevelDefinition): LoadedLevel {
     'Mechanical Plant': 'industrial',
   }
   const tileset = tilesetMap[def.name] ?? 'greenhill'
-  const tileMap = new TileMap(def.tileGrid, tileset)
+  const tileMap = new TileMap(def.tileGrid, tileset, def.depthGrid)
   const sensors = new SensorSystem(tileMap)
   const sonicPhysics = new SonicPhysics(sensors)
   const camera = new Camera(def.width * TILE_SIZE, def.height * TILE_SIZE)
@@ -74,6 +75,14 @@ export function loadLevel(def: LevelDefinition): LoadedLevel {
       case 'spring': {
         const force = (spawn.properties?.force as number) ?? -10
         entity = new Spring(spawn.x, spawn.y, force)
+        break
+      }
+      case 'depthTrigger': {
+        const from = (spawn.properties?.fromDepth as number) ?? 0
+        const to = (spawn.properties?.toDepth as number) ?? 1
+        const trigger = new DepthTrigger(spawn.x, spawn.y, from, to)
+        trigger.setPlayer(player)
+        entity = trigger
         break
       }
     }

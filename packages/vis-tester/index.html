@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Tester</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script type="module">
+      import * as app from './test.ts'
+      window.start = () => {
+        app.start()
+      }
+    </script>
+  </head>
+  <body onload="start()"></body>
+</html>

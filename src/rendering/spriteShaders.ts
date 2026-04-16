@@ -1,5 +1,5 @@
-import { GLType, AttrType } from "./WebGL/shaderprogram"
-import { VertexArrayTarget } from "./WebGL/vertexArray"
+import { GLType, AttrType } from './WebGL/shaderprogram'
+import { VertexArrayTarget } from './WebGL/vertexArray'
 
 export const SPRITE_VERT = `#version 300 es
 in vec2 aPosition;

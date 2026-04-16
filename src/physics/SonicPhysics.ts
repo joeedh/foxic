@@ -18,8 +18,10 @@ import {
   PLAYER_HEIGHT,
   PLAYER_HEIGHT_ROLLING,
   PLAYER_RADIUS,
+  FALL_OFF_SPEED,
+  CONTROL_LOCK_FRAMES,
 } from '../constants'
-import { SensorSystem } from './SensorSystem'
+import { SensorSystem, SensorMode, getSensorMode } from './SensorSystem'
 
 export interface PhysicsState {
   x: number
@@ -30,6 +32,8 @@ export interface PhysicsState {
   groundAngle: number
   onGround: boolean
   pushing: boolean
+  controlLockTimer: number
+  currentDepth: number
 }
 
 export class SonicPhysics {
@@ -41,6 +45,13 @@ export class SonicPhysics {
     inputRight: boolean,
     rolling: boolean,
   ) {
+    // Decrement control lock timer
+    if (state.controlLockTimer > 0) {
+      state.controlLockTimer--
+      inputLeft = false
+      inputRight = false
+    }
+
     // 1. Slope factor
     const slopeFactor = rolling
       ? state.groundSpeed > 0
@@ -104,26 +115,65 @@ export class SonicPhysics {
     state.x += state.xSpeed
     state.y += state.ySpeed
 
-    // 5. Re-detect ground (cast from player's feet)
+    // 5. Re-detect ground using mode-aware sensors
     const height = rolling ? PLAYER_HEIGHT_ROLLING : PLAYER_HEIGHT
-    const floor = this.sensors.castFloorSensors(state.x, state.y + height, 32)
+    const mode = getSensorMode(state.groundAngle)
+    const d = state.currentDepth
+    const floor = this.sensors.castGroundSensorsWithMode(
+      state.x,
+      state.y,
+      height,
+      mode,
+      32,
+      d,
+    )
 
     if (floor.hit && floor.distance <= 14) {
-      state.y = floor.surfaceY - height
+      // Snap to surface based on mode
+      switch (mode) {
+        case SensorMode.Floor:
+          state.y = floor.surfaceY - height
+          break
+        case SensorMode.Ceiling:
+          state.y = floor.surfaceY
+          break
+        case SensorMode.RightWall:
+          state.x = floor.surfaceX - PLAYER_RADIUS
+          break
+        case SensorMode.LeftWall:
+          state.x = floor.surfaceX + PLAYER_RADIUS
+          break
+      }
       state.groundAngle = floor.angle
-      state.onGround = true
+
+      // Fall-off check: detach if too slow on steep surfaces
+      const absAngle = Math.abs(state.groundAngle)
+      if (
+        absAngle > Math.PI / 4 &&
+        Math.abs(state.groundSpeed) < FALL_OFF_SPEED
+      ) {
+        state.onGround = false
+        state.groundAngle = 0
+        state.controlLockTimer = CONTROL_LOCK_FRAMES
+      } else {
+        state.onGround = true
+      }
     } else {
       // Lost ground
       state.onGround = false
       state.groundAngle = 0
-      // Decompose ground speed for air
-      // Keep xSpeed and ySpeed as-is from the conversion above
     }
 
     // 6. Wall check
     state.pushing = false
     if (state.xSpeed > 0) {
-      const wall = this.sensors.castWallSensor(state.x, state.y + height / 2, 1)
+      const wall = this.sensors.castWallSensor(
+        state.x,
+        state.y + height / 2,
+        1,
+        PLAYER_RADIUS + 2,
+        d,
+      )
       if (wall.hit) {
         state.x = wall.wallX - PLAYER_RADIUS - 1
         state.groundSpeed = 0
@@ -135,6 +185,8 @@ export class SonicPhysics {
         state.x,
         state.y + height / 2,
         -1,
+        PLAYER_RADIUS + 2,
+        d,
       )
       if (wall.hit) {
         state.x = wall.wallX + PLAYER_RADIUS + 1
@@ -151,6 +203,11 @@ export class SonicPhysics {
     inputRight: boolean,
     rolling: boolean,
   ) {
+    // Decrement control lock in air too
+    if (state.controlLockTimer > 0) {
+      state.controlLockTimer--
+    }
+
     // 1. Gravity
     state.ySpeed += GRAVITY
     if (state.ySpeed > MAX_Y_SPEED) state.ySpeed = MAX_Y_SPEED
@@ -174,15 +231,20 @@ export class SonicPhysics {
     state.y += state.ySpeed
 
     const height = rolling ? PLAYER_HEIGHT_ROLLING : PLAYER_HEIGHT
+    const d = state.currentDepth
 
     // 5. Floor check (landing)
     if (state.ySpeed >= 0) {
-      const floor = this.sensors.castFloorSensors(state.x, state.y + height, 8)
+      const floor = this.sensors.castFloorSensors(
+        state.x,
+        state.y + height,
+        8,
+        d,
+      )
       if (floor.hit && floor.distance <= 0) {
         state.y = floor.surfaceY - height
         state.groundAngle = floor.angle
         state.onGround = true
-        // Convert air speed to ground speed by projecting onto slope
         state.groundSpeed =
           state.xSpeed * Math.cos(floor.angle) -
           state.ySpeed * Math.sin(floor.angle)
@@ -191,7 +253,7 @@ export class SonicPhysics {
 
     // 6. Ceiling check
     if (state.ySpeed < 0) {
-      const ceil = this.sensors.castCeilingSensor(state.x, state.y)
+      const ceil = this.sensors.castCeilingSensor(state.x, state.y, d)
       if (ceil.hit && ceil.ceilingY > state.y) {
         state.y = ceil.ceilingY
         state.ySpeed = 0
@@ -201,7 +263,13 @@ export class SonicPhysics {
     // 7. Wall check
     state.pushing = false
     if (state.xSpeed > 0) {
-      const wall = this.sensors.castWallSensor(state.x, state.y + height / 2, 1)
+      const wall = this.sensors.castWallSensor(
+        state.x,
+        state.y + height / 2,
+        1,
+        PLAYER_RADIUS + 2,
+        d,
+      )
       if (wall.hit) {
         state.x = wall.wallX - PLAYER_RADIUS - 1
         state.xSpeed = 0
@@ -212,6 +280,8 @@ export class SonicPhysics {
         state.x,
         state.y + height / 2,
         -1,
+        PLAYER_RADIUS + 2,
+        d,
       )
       if (wall.hit) {
         state.x = wall.wallX + PLAYER_RADIUS + 1

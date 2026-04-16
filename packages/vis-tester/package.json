@@ -1,0 +1,14 @@
+{
+    "name": "@gametest/vis-tester-base",
+    "scripts": {
+        "typecheck": "npx tsgo --noEmit"
+    },
+    "devDependencies": {
+        "esbuild": "^0.28.0",
+        "path.ux": "workspace:*"
+    },
+    "dependencies": {
+        "@typescript/native-preview": "7.0.0-dev.20260414.1",
+        "typescript": "^6.0.2"
+    }
+}

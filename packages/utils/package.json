@@ -1,0 +1,13 @@
+{
+    "name": "@gametest/utils",
+    "scripts": {
+        "typecheck": "npx tsgo --noEmit"
+    },
+    "devDependencies": {
+        "path.ux": "workspace:*"
+    },
+    "dependencies": {
+        "@typescript/native-preview": "7.0.0-dev.20260414.1",
+        "typescript": "^6.0.2"
+    }
+}

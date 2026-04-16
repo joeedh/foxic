@@ -1,7 +1,7 @@
-import { ShaderProgramBase } from "./WebGL/shaderprogram"
-import { GPUDrawElements } from "./WebGL/gpuDrawElements"
-import type { Texture } from "./WebGL/texture"
-import { spriteDef } from "./spriteShaders"
+import { ShaderProgramBase } from './WebGL/shaderprogram'
+import { GPUDrawElements } from './WebGL/gpuDrawElements'
+import type { Texture } from './WebGL/texture'
+import { spriteDef } from './spriteShaders'
 
 const VERTS_PER_QUAD = 4
 const INDICES_PER_QUAD = 6
@@ -20,7 +20,7 @@ export interface RenderStats {
  */
 export class SpriteBatch {
   private shader: ShaderProgramBase<typeof spriteDef>
-  private batch: GPUDrawElements<typeof spriteDef["attrs"]>
+  private batch: GPUDrawElements<(typeof spriteDef)['attrs']>
   private posArr: Float32Array
   private uvArr: Float32Array
   private colArr: Float32Array
@@ -147,9 +147,9 @@ export class SpriteBatch {
     }
 
     // Re-cache array refs: growData may have reallocated the underlying buffers
-    this.posArr = this.batch.getArray("aPosition") as Float32Array
-    this.uvArr = this.batch.getArray("aTexCoord") as Float32Array
-    this.colArr = this.batch.getArray("aColor") as Float32Array
+    this.posArr = this.batch.getArray('aPosition') as Float32Array
+    this.uvArr = this.batch.getArray('aTexCoord') as Float32Array
+    this.colArr = this.batch.getArray('aColor') as Float32Array
 
     this.capacity = newCap
   }

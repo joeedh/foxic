@@ -2,6 +2,9 @@
 
 * Save all plans (with descriptive names) to documentation/plans.
 
+# Use tsgo instead of tsc
+* Use typescript native (tsgo) instead of tsc.
+
 # Package Manager And Commands
 
 * Use pnpm
@@ -34,7 +37,7 @@
 
 * `pnpm dev` — start Vite dev server
 * `pnpm build` — typecheck and build for production
-* `pnpm typecheck` — run `tsc --noEmit`
+* `pnpm typecheck` — run `npx tsgo --noEmit`
 * `pnpm format` — run Prettier
 * `pnpm playwright` — run Playwright tests (in `tests/playwright/`)
 

@@ -1,0 +1,18 @@
+export {
+  Vector2,
+  Vector3,
+  Vector4,
+  Quat,
+  Matrix4,
+  type Vector2Like,
+  type Vector3Like,
+  type Vector4Like,
+  type VectorLike,
+  type Number2,
+  type Number3,
+  type Number4,
+  type IOpenNumVector,
+  type IBaseVector
+} from 'path.ux'
+
+

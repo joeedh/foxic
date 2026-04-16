@@ -1,2 +1,4 @@
+packages:
+  - packages/**
 patchedDependencies:
   mcp-image: patches/mcp-image.patch
