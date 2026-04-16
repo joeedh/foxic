@@ -5,7 +5,8 @@
     },
     "devDependencies": {
         "path.ux": "workspace:*",
-        "@gametest/utils": "workspace:*"
+        "@gametest/utils": "workspace:*",
+        "@gametest/tsconfig": "workspace:*"
     },
     "dependencies": {
         "@typescript/native-preview": "7.0.0-dev.20260414.1",

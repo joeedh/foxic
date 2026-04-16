@@ -1,18 +1,11 @@
 import config from './config'
 
 import {
-  util,
-  math,
   Vector2,
-  Vector3,
-  Vector4,
   Matrix4,
-  nstructjs,
   ToolOp,
-  IntProperty,
   FloatProperty,
   Vec3Property,
-  Vec4Property,
   Vec2Property,
   FlagProperty,
   keymap,
@@ -81,8 +74,8 @@ export class TransformElem {
   static transformDefine() {
     return {
       typeName: '',
-      uiName: '',
-      selMask: 0,
+      uiName  : '',
+      selMask : 0,
     }
   }
 
@@ -138,11 +131,7 @@ export class TransformVert extends TransformElem {
     return list
   }
 
-  static undoPre(
-    mesh: Mesh,
-    selMask: Number,
-    list: TransformList<TransformVert>,
-  ) {
+  static undoPre(mesh: Mesh, selMask: Number, list: TransformList<TransformVert>) {
     let ret = []
 
     for (let td of list) {
@@ -177,8 +166,8 @@ export class TransformVert extends TransformElem {
   static transformDefine() {
     return {
       typeName: 'verts',
-      uiName: 'verts',
-      selMask: MeshTypes.VERTEX | MeshTypes.HANDLE,
+      uiName  : 'verts',
+      selMask : MeshTypes.VERTEX | MeshTypes.HANDLE,
     }
   }
 
@@ -233,7 +222,7 @@ export class TransformOp<
       toolpath: '',
       inputs: {
         selMask: new FlagProperty(config.SELECTMASK, MeshTypes),
-        center: new VecProperty(),
+        center : new VecProperty(),
       },
     }
   }
@@ -347,7 +336,7 @@ export class TransformOp<
   on_pointermove(e: PointerEvent) {
     let ctx = this.modal_ctx!
 
-    let workspace = ctx.canvas
+    let workspace = ctx.canvas!
     let mpos = workspace.getLocalMouse(e.x, e.y)
 
     if (this.first) {
@@ -380,7 +369,7 @@ export class TranslateOp<
 
   static tooldef() {
     return {
-      uiname: 'Move',
+      uiname  : 'Move',
       toolpath: 'transform.translate',
       inputs: ToolOp.inherit({
         offset: new VecProperty(),
@@ -428,7 +417,7 @@ export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
 
   static tooldef() {
     return {
-      uiname: 'Move',
+      uiname  : 'Move',
       toolpath: 'transform.scale',
       inputs: ToolOp.inherit({
         scale: new VecProperty(),
@@ -440,7 +429,7 @@ export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
 
   on_pointermove(e: PointerEvent) {
     let ctx = this.modal_ctx!
-    let workspace = ctx.canvas
+    let workspace = ctx.canvas!
 
     super.on_pointermove(e)
 
@@ -508,7 +497,7 @@ export class RotateOp extends TransformOp<{ th: FloatProperty }> {
 
   static tooldef() {
     return {
-      uiname: 'Move',
+      uiname  : 'Move',
       toolpath: 'transform.rotate',
       inputs: ToolOp.inherit({
         th: new FloatProperty(),
@@ -521,7 +510,7 @@ export class RotateOp extends TransformOp<{ th: FloatProperty }> {
     super.on_pointermove(e)
 
     let ctx = this.modal_ctx!
-    let workspace = ctx.canvas
+    let workspace = ctx.canvas!
 
     this.resetTempGeom()
 

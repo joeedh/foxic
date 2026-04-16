@@ -5,6 +5,10 @@ import http from 'http'
 import Path from 'path'
 import child_process from 'child_process'
 
+import { fileURLToPath } from 'url'
+
+const execPath = Path.dirname(fileURLToPath(import.meta.url))
+
 // set by devconainer
 const argPort =
   process.argv.length > 2 && !isNaN(parseInt(process.argv[2]))
@@ -25,16 +29,16 @@ const basedir = process.cwd()
 export const exports = {}
 
 let mimemap = {
-  '.js': 'application/javascript',
-  '.cjs': 'application/javascript',
-  '.mjs': 'application/javascript',
-  '.ts': 'application/typescript',
+  '.js'  : 'application/javascript',
+  '.cjs' : 'application/javascript',
+  '.mjs' : 'application/javascript',
+  '.ts'  : 'application/typescript',
   '.json': 'text/json',
   '.html': 'text/html',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.css': 'text/css',
-  '.svg': 'image/svg+xml',
+  '.png' : 'image/png',
+  '.jpg' : 'image/jpeg',
+  '.css' : 'text/css',
+  '.svg' : 'image/svg+xml',
 }
 
 let getMime = (p) => {
@@ -49,10 +53,7 @@ let getMime = (p) => {
   return 'text/plain'
 }
 
-let allowed_origins = new Set([
-  `http://${HOST}:${PORT}/`,
-  `http://${HOST}:${PORT}`,
-])
+let allowed_origins = new Set([`http://${HOST}:${PORT}/`, `http://${HOST}:${PORT}`])
 
 exports.ServerResponse = class ServerResponse extends http.ServerResponse {
   _addHeaders(origin) {
@@ -116,9 +117,10 @@ const serv = http.createServer(
     if (p.endsWith('.js') || p.endsWith('.ts')) {
       let error = false
       const path = p
-      child_process.execSync(`rm -rf dist/${path} 2> /dev/null`)
+      child_process.execSync(`rm -rf dist/${path}* 2> /dev/null`, { shell: true })
+
       try {
-        child_process.execSync(`node esbuilder.mjs ${path}`, {
+        child_process.execSync(`node ${execPath}/esbuilder.mjs ${path}`, {
           stdio: 'inherit',
         })
       } catch (error) {
@@ -130,7 +132,7 @@ const serv = http.createServer(
         return res.sendError(500, 'build failed')
       }
 
-      p = `${Path.dirname(p)}/dist/${Path.basename(p).slice(0, -3)}.js`
+      p = `${basedir}/dist/${Path.basename(p).slice(0, -3)}.js`
       console.log(p)
     }
 

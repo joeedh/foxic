@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 
 export const Icons = {
   FOLDER        : 0, //file folder
@@ -33,4 +33,5 @@ export const Icons = {
   SHIFT_LEFT    : 29,
   SHIFT_RIGHT   : 30,
   BRUSH         : 31,
-};
+  MESH          : 32,
+}

@@ -8,16 +8,17 @@ import {
   UINameMap,
   EnumProperty,
   nstructjs,
+  Vector2Like,
 } from 'path.ux'
-import { AppContext } from '../core/context'
+import type { AppContext } from '../core/context'
 import { StructReader } from 'path.ux/scripts/util/nstructjs'
 import { Icons } from '../assets/icon_enum'
 import { registerDataClass } from '../core/register'
 export const ToolModeClasses = [] as any[]
 
 export interface IToolModeConstructor<T extends ToolMode<any> = ToolMode> {
-    new(): T
-    readonly toolModeDef: Readonly<IToolModeDef>
+  new (): T
+  readonly toolModeDef: Readonly<IToolModeDef>
 }
 
 export interface IToolModeDef {
@@ -28,9 +29,15 @@ export interface IToolModeDef {
 }
 
 export abstract class ToolMode<CTX extends AppContext = AppContext> {
-  static STRUCT = nstructjs.inlineRegister(this, `ToolMode {}`)
+  static STRUCT = nstructjs.inlineRegister(
+    this,
+    `ToolMode {
+    selectMask : int;
+  }`,
+  )
   static readonly toolModeDef: Readonly<IToolModeDef>
 
+  selectMask = 0
   ctx?: CTX
 
   get toolModeDef() {
@@ -78,6 +85,10 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
       .addDescriptions(descDef)
   }
 
+  findElement(selectMask: number, localMouse2d: Vector2Like, limit?: number): any {
+    return undefined
+  }
+
   buildSideBar(container: Container<CTX>) {
     //
   }
@@ -99,31 +110,33 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
     //
   }
 
-  on_pointerdown(e: PointerEvent) {}
-  on_pointermove(e: PointerEvent) {}
-  on_pointerup(e: PointerEvent) {}
-  on_keydown(e: KeyboardEvent) {}
-  on_keyup(e: KeyboardEvent) {}
+  onPointerDown(e: PointerEvent) {}
+  onPointerMove(e: PointerEvent) {}
+  onPointerUp(e: PointerEvent) {}
+  onKeyDown(e: KeyboardEvent) {}
+  onKeyUp(e: KeyboardEvent) {}
 
   loadStruct(reader: StructReader<this>) {
     reader(this)
   }
-}
 
+  draw(ctx: CTX, canvas: HTMLCanvasElement, g: CanvasRenderingContext2D) {
+    this.ctx = ctx
+  }
+}
 
 export class EmptyToolMode extends ToolMode {
   static STRUCT = nstructjs.inlineRegister(this, `DefaultToolMode {}`)
 
   static readonly toolModeDef = {
-    typeName: 'default',
-    uiName: 'Default',
+    typeName   : 'default',
+    uiName     : 'Default',
     description: 'Default tool mode',
-    icon: Icons.ZOOM_IN,
+    icon       : Icons.ZOOM_IN,
   }
   loadStruct(reader: nstructjs.StructReader<this>) {
     super.loadStruct(reader)
     reader(this)
-  }  
+  }
 }
 ToolMode.register(EmptyToolMode)
-

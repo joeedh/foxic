@@ -1,4 +1,6 @@
-import {util, math, Vector2, Vector3, INumVector} from '../path.ux/scripts/pathux.js'
+import { util, math, Vector2, Vector3, Vector2Like } from 'path.ux'
+
+type Vec2Arg = Vector2Like
 
 /*
 
@@ -72,7 +74,10 @@ export function cubic(k1: number, k2: number, k3: number, k4: number, s: number)
 }
 
 export function dcubic(k1: number, k2: number, k3: number, k4: number, s: number) {
-  return -3 * ((s - 1) ** 2 * k1 - k4 * s ** 2 + (3 * s - 2) * k3 * s - (3 * s - 1) * (s - 1) * k2)
+  return (
+    -3 *
+    ((s - 1) ** 2 * k1 - k4 * s ** 2 + (3 * s - 2) * k3 * s - (3 * s - 1) * (s - 1) * k2)
+  )
 }
 
 export function d2cubic(k1: number, k2: number, k3: number, k4: number, s: number) {
@@ -81,12 +86,19 @@ export function d2cubic(k1: number, k2: number, k3: number, k4: number, s: numbe
 
 let offsetdvs = util.cachering.fromConstructor(Vector2, 64)
 
-export function cubicOffsetDv(_a: INumVector, _b: INumVector, _c: INumVector, _d: INumVector, s: number, radius: number) {
+export function cubicOffsetDv(
+  _a: Vec2Arg,
+  _b: Vec2Arg,
+  _c: Vec2Arg,
+  _d: Vec2Arg,
+  s: number,
+  radius: number,
+) {
   let a = _a as unknown as Vector2
   let b = _b as unknown as Vector2
   let c = _c as unknown as Vector2
   let d = _d as unknown as Vector2
-  
+
   let dv = offsetdvs.next()
   let dv2 = offsetdvs.next()
 
@@ -111,11 +123,17 @@ export function cubicOffsetDv(_a: INumVector, _b: INumVector, _c: INumVector, _d
   //console.log("dv", dx, dy, dx2, dy2, radius, s);
 
   ret[0] =
-    ((sqrt(dx ** 2 + dy ** 2) * dx ** 2 + sqrt(dx ** 2 + dy ** 2) * dy ** 2 + dx * dy2 * radius - dx2 * dy * radius) *
+    ((sqrt(dx ** 2 + dy ** 2) * dx ** 2 +
+      sqrt(dx ** 2 + dy ** 2) * dy ** 2 +
+      dx * dy2 * radius -
+      dx2 * dy * radius) *
       dx) /
     div
   ret[1] =
-    ((sqrt(dx ** 2 + dy ** 2) * dx ** 2 + sqrt(dx ** 2 + dy ** 2) * dy ** 2 + dx * dy2 * radius - dx2 * dy * radius) *
+    ((sqrt(dx ** 2 + dy ** 2) * dx ** 2 +
+      sqrt(dx ** 2 + dy ** 2) * dy ** 2 +
+      dx * dy2 * radius -
+      dx2 * dy * radius) *
       dy) /
     div
 

@@ -5,14 +5,18 @@ export type IEvents = {
 type EventTypes<T extends IEvents> = keyof T
 
 export class EventEmitter<EVENTS extends IEvents> {
-  private handlers = new Map<
-    EventTypes<EVENTS>,
-    Set<(...args: any[]) => void>
-  >()
-  private onceHandlers = new Map<
-    EventTypes<EVENTS>,
-    Set<(...args: any[]) => void>
-  >()
+  private handlers = new Map<EventTypes<EVENTS>, Set<(...args: any[]) => void>>()
+  private onceHandlers = new Map<EventTypes<EVENTS>, Set<(...args: any[]) => void>>()
+
+  has<K extends EventTypes<EVENTS>>(event: K, handler: EVENTS[K]) {
+    if (!this.handlers.has(event)) {
+      return false
+    }
+    return (
+      this.handlers?.get(event)?.has(handler) ||
+      this.onceHandlers?.get(event)?.has(handler)
+    )
+  }
 
   on<K extends EventTypes<EVENTS>>(event: K, handler: EVENTS[K]) {
     if (!this.handlers.has(event)) {

@@ -13,6 +13,7 @@ import type { AppState } from './app'
 import { CanvasEditor, Editor } from '../editors'
 import { registerDataClass } from './register'
 import { ITemplateDef, PropertiesBag } from './props'
+import { redrawAll } from '../editors/redraw'
 
 function savePropertyForLocked(
   ctx: AppContext,
@@ -36,10 +37,9 @@ function loadPropertyForLocked(
   return value
 }
 
-export class AppContext<
-  DataModelRoot = unknown,
-  SettingsTempl extends ITemplateDef = {},
-> implements ILockableCtx {
+export class AppContext<DataModelRoot = unknown, SettingsTempl extends ITemplateDef = {}>
+  implements ILockableCtx
+{
   declare state: AppState<SettingsTempl, DataModelRoot>
 
   static defineAPI(api: DataAPI) {
@@ -56,7 +56,7 @@ export class AppContext<
     st.dynamicStruct('_settings', '_settings', 'Settings')
 
     PropertiesBag.defineAPI(api)
-    
+
     buildToolSysAPI(api, true)
     return st
   }
@@ -130,8 +130,18 @@ export class AppContext<
     return this.state.settings
   }
 
-  redraw_all() {
-    //
+  get selectMask() {
+    return this.canvas?.toolmode?.selectMask ?? 0
+  }
+  set selectMask(mask: number) {
+    if (this.canvas?.toolmode) {
+      this.canvas.toolmode.selectMask = mask
+      this.canvas.redrawAll()
+    }
+  }
+
+  redrawAll() {
+    redrawAll()
   }
 }
 

@@ -2,7 +2,6 @@ import { Vector3, Vector4, util, nstructjs, Vector4Like } from 'path.ux'
 import config from './config'
 import { MeshFlags, MeshFeatures, MeshTypes } from './mesh_base'
 import { cubic, cubicOffsetDv, d2cubic, dcubic } from './bezier.js'
-import './redraw_all'
 import { StructReader } from 'path.ux/scripts/util/nstructjs'
 import { IDGen } from 'path.ux/scripts/util/util'
 import { EventEmitter } from '@gametest/utils'
@@ -1339,7 +1338,7 @@ export class Mesh {
     */
   }
 
-  selectFlush(selmode: MeshTypes) {
+  selectFlush(selmode: number) {
     if (selmode & MeshTypes.VERTEX) {
       this.edges.selectNone()
       this.faces.selectNone()

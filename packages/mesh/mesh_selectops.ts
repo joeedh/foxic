@@ -1,4 +1,4 @@
-import config from '../config/config.js'
+import config from './config'
 
 import {
   BoolProperty,
@@ -9,10 +9,10 @@ import {
   ToolOp,
   PropertySlots,
   ToolDef,
-} from '../path.ux/scripts/pathux.js'
-import {Context} from './context.js'
-import {Edge, Face, Handle, Loop, MeshFlags, MeshTypes, Vertex} from './mesh'
-import {SelToolModes} from './mesh_ops'
+} from 'path.ux'
+import { Edge, Element, Face, Handle, Loop, meshRedrawEmitter, Vertex } from './mesh'
+import { MeshCtx, SelToolModes } from './mesh_ops'
+import { MeshTypes, MeshFlags } from './mesh_base'
 
 interface ISelecTOpUndo {
   elems: number[]
@@ -21,38 +21,42 @@ interface ISelecTOpUndo {
   highlight: number
 }
 
-export class SelectOpBase<Inputs extends PropertySlots = {}, Outputs extends PropertySlots = {}> extends ToolOp<
+export class SelectOpBase<
+  CTX extends MeshCtx,
+  Inputs extends PropertySlots = {},
+  Outputs extends PropertySlots = {},
+> extends ToolOp<
   Inputs & {
     mode: EnumProperty
-    selMask: FlagProperty
+    selectMask: FlagProperty
   },
   Outputs,
-  Context
+  CTX
 > {
-  _selectOpUndo: ISelecTOpUndo[]
+  _selectOpUndo?: ISelecTOpUndo[]
 
   static tooldef(): ToolDef {
     return {
       toolpath: '<select op base>',
       inputs: {
-        mode   : new EnumProperty(SelToolModes.AUTO, SelToolModes),
-        selMask: new FlagProperty(1 | 2 | 4 | 8 | 16, MeshTypes),
+        mode      : new EnumProperty(SelToolModes.AUTO, SelToolModes),
+        selectMask: new FlagProperty(1 | 2 | 4 | 8 | 16, MeshTypes),
       },
     }
   }
 
-  static invoke(ctx: Context, args: any) {
+  static invoke(ctx: MeshCtx, args: any) {
     let tool = super.invoke(ctx, args)
 
-    if (!('selMask' in args)) {
-      tool.inputs.selMask.setValue(ctx.selMask)
+    if (!('selectMask' in args)) {
+      tool.inputs.selectMask.setValue(ctx.selectMask)
     }
 
     return tool
   }
 
-  getSelMask(ctx: Context) {
-    let mask = this.inputs.selMask.getValue()
+  getselectMask(ctx: CTX) {
+    let mask = this.inputs.selectMask.getValue()
 
     if (ctx.mesh.haveHandles) {
       mask |= MeshTypes.HANDLE
@@ -61,11 +65,11 @@ export class SelectOpBase<Inputs extends PropertySlots = {}, Outputs extends Pro
     return mask
   }
 
-  undoPre(ctx: Context) {
+  undoPre(ctx: CTX) {
     this._selectOpUndo = []
 
     let mesh = ctx.mesh
-    let mask = this.getSelMask(ctx)
+    let mask = this.getselectMask(ctx)
 
     for (let list of mesh.getElists()) {
       let data = {
@@ -88,11 +92,11 @@ export class SelectOpBase<Inputs extends PropertySlots = {}, Outputs extends Pro
     }
   }
 
-  undo(ctx: Context) {
+  undo(ctx: CTX) {
     let mesh = ctx.mesh
     let eidMap = mesh.eidMap
 
-    for (let list of this._selectOpUndo) {
+    for (let list of this._selectOpUndo!) {
       let elist = mesh.elists[list.type]
 
       elist.active = eidMap.get(list.active)
@@ -117,47 +121,50 @@ export class SelectOpBase<Inputs extends PropertySlots = {}, Outputs extends Pro
       }
     }
 
-    window.redraw_all()
+    mesh.regenRender()
   }
 
-  execPost(ctx: Context) {
-    window.redraw_all()
+  execPost(ctx: CTX) {
+    ctx.mesh.regenRender()
   }
 }
 
-export class SelectOneOp extends SelectOpBase<{
-  elemEid: IntProperty
-  flush: BoolProperty
-  setActive: BoolProperty
-  unique: BoolProperty
-}> {
+export class SelectOneOp<CTX extends MeshCtx> extends SelectOpBase<
+  CTX,
+  {
+    elemEid: IntProperty
+    flush: BoolProperty
+    setActive: BoolProperty
+    unique: BoolProperty
+  }
+> {
   static tooldef() {
     return {
       uiname  : 'Select One',
       toolpath: 'mesh.select_one',
-      inputs: ToolOp.inherit({
+      inputs: {
         elemEid  : new IntProperty(),
         flush    : new BoolProperty(true),
         setActive: new BoolProperty(true),
         unique   : new BoolProperty(true),
-      }),
+      },
     }
   }
 
-  static invoke(ctx: Context, args: any) {
+  static invoke(ctx: MeshCtx, args: any) {
     let tool = super.invoke(ctx, args)
 
-    if (!('selMask' in args)) {
-      tool.inputs.selMask.setValue(ctx.selMask)
+    if (!('selectMask' in args)) {
+      tool.inputs.selectMask.setValue(ctx.selectMask)
     }
 
     return tool
   }
 
-  exec(ctx: Context) {
+  exec(ctx: CTX) {
     let mesh = ctx.mesh
-    let {mode, elemEid, flush, setActive, unique} = this.getInputs()
-    let selMask = this.getSelMask(ctx)
+    let { mode, elemEid, flush, setActive, unique } = this.getInputs()
+    let selectMask = this.getselectMask(ctx)
 
     let elem = mesh.eidMap.get(elemEid)
     const haveHandles = mesh.haveHandles
@@ -189,14 +196,17 @@ export class SelectOneOp extends SelectOpBase<{
     }
 
     if (flush) {
-      mesh.selectFlush(selMask)
+      mesh.selectFlush(selectMask as unknown as MeshTypes)
     }
   }
 }
 
 ToolOp.register(SelectOneOp)
 
-export class ToggleSelectOp extends SelectOpBase<{setActive: BoolProperty}> {
+export class ToggleSelectOp<CTX extends MeshCtx> extends SelectOpBase<
+  CTX,
+  { setActive: BoolProperty }
+> {
   static tooldef() {
     return {
       uiname  : 'Select All/None',
@@ -208,9 +218,9 @@ export class ToggleSelectOp extends SelectOpBase<{setActive: BoolProperty}> {
     }
   }
 
-  exec(ctx: Context) {
+  exec(ctx: CTX) {
     let mesh = ctx.mesh
-    let {setActive, mode, selMask} = this.getInputs()
+    let { setActive, mode, selectMask } = this.getInputs()
 
     let hasActive
 
@@ -218,7 +228,7 @@ export class ToggleSelectOp extends SelectOpBase<{setActive: BoolProperty}> {
       mode = SelToolModes.ADD
 
       for (let elist of mesh.getElists()) {
-        if (!(elist.type & selMask)) {
+        if (!(elist.type & selectMask)) {
           continue
         }
 
@@ -238,10 +248,10 @@ export class ToggleSelectOp extends SelectOpBase<{setActive: BoolProperty}> {
       setActive = setActive && !hasActive
     }
 
-    console.log(setActive, selMask, mode)
+    console.log(setActive, selectMask, mode)
 
     for (let elist of mesh.getElists()) {
-      if (!(elist.type & selMask)) {
+      if (!(elist.type & selectMask)) {
         continue
       }
 
@@ -257,13 +267,20 @@ export class ToggleSelectOp extends SelectOpBase<{setActive: BoolProperty}> {
       }
     }
 
-    mesh.selectFlush(selMask)
+    mesh.selectFlush(selectMask)
   }
 }
 
 ToolOp.register(ToggleSelectOp)
 
-export class SelectLinked extends SelectOpBase<{pick: BoolProperty; elemEid: IntProperty; onlyElem: BoolProperty}> {
+export class SelectLinked<CTX extends MeshCtx> extends SelectOpBase<
+  CTX,
+  {
+    pick: BoolProperty
+    elemEid: IntProperty
+    onlyElem: BoolProperty
+  }
+> {
   static tooldef() {
     return {
       uiname  : 'Select Linked',
@@ -277,14 +294,17 @@ export class SelectLinked extends SelectOpBase<{pick: BoolProperty; elemEid: Int
     }
   }
 
-  static invoke(ctx: Context, args: any) {
+  static invoke(ctx: MeshCtx, args: any) {
     let tool = super.invoke(ctx, args)
 
     if (tool.inputs.pick.getValue()) {
-      let workspace = ctx.workspace!
-      let elem = workspace.pick(workspace.mpos[0], workspace.mpos[1], tool.inputs.selMask.getValue())
+      let workspace = ctx.canvas!
+      let elem = workspace.findElement(
+        tool.inputs.selectMask.getValue(),
+        workspace.lastLocalMouse,
+      )
 
-      if (elem) {
+      if (elem instanceof Element) {
         switch (elem.type) {
           case MeshTypes.HANDLE:
             elem = (elem as Handle).owner!.v1
@@ -308,11 +328,11 @@ export class SelectLinked extends SelectOpBase<{pick: BoolProperty; elemEid: Int
     return tool
   }
 
-  exec(ctx: Context) {
+  exec(ctx: CTX) {
     let visit = new WeakSet()
     let stack = [] as Vertex[]
     let mesh = ctx.mesh
-    let {selMask, mode, pick, onlyElem, elemEid} = this.getInputs()
+    let { selectMask, mode, pick, onlyElem, elemEid } = this.getInputs()
 
     let vs: Set<Vertex>
 
@@ -354,7 +374,7 @@ export class SelectLinked extends SelectOpBase<{pick: BoolProperty; elemEid: Int
       }
     }
 
-    mesh.selectFlush(selMask)
+    mesh.selectFlush(selectMask)
   }
 }
 

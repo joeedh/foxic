@@ -13,6 +13,9 @@ importers:
 
   .:
     devDependencies:
+      '@pathtx/prettier':
+        specifier: 3.3.0-dev
+        version: 3.3.0-dev
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -41,6 +44,9 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
     devDependencies:
+      '@gametest/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@gametest/utils':
         specifier: workspace:*
         version: link:../utils
@@ -185,6 +191,42 @@ importers:
         specifier: 6.0.0
         version: 6.0.0
 
+  packages/texgen:
+    dependencies:
+      '@typescript/native-preview':
+        specifier: 7.0.0-dev.20260414.1
+        version: 7.0.0-dev.20260414.1
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.2
+    devDependencies:
+      '@gametest/math':
+        specifier: workspace:*
+        version: link:../math
+      '@gametest/meshlib':
+        specifier: workspace:*
+        version: link:../mesh
+      '@gametest/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@gametest/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@gametest/vis-tester-base':
+        specifier: workspace:*
+        version: link:../vis-tester
+      '@gametest/webgl':
+        specifier: workspace:*
+        version: link:../webgl
+      esbuild:
+        specifier: ^0.28.0
+        version: 0.28.0
+      path.ux:
+        specifier: workspace:*
+        version: link:../path.ux
+
+  packages/tsconfig: {}
+
   packages/utils:
     dependencies:
       '@typescript/native-preview':
@@ -207,6 +249,18 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
     devDependencies:
+      '@gametest/math':
+        specifier: workspace:*
+        version: link:../math
+      '@gametest/meshlib':
+        specifier: workspace:*
+        version: link:../mesh
+      '@gametest/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@gametest/utils':
+        specifier: workspace:*
+        version: link:../utils
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0

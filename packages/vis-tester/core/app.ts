@@ -87,7 +87,7 @@ export abstract class AppState<
   onSettingsLoad() {
     this.settings.patchTemplate(this.settingsTemplate)
     this.settings.onChange = () => {
-      this.ctx.redraw_all()
+      this.ctx.redrawAll()
       if (this.saveStartupOnSettingsChange) {
         this.saveLocalStorage()
       }
@@ -113,11 +113,7 @@ export abstract class AppState<
   }
 
   save(args: IFileOptions = {}) {
-    const file = new MyFileExport(
-      this.settings,
-      Array.from(this.version),
-      'VIST',
-    )
+    const file = new MyFileExport(this.settings, Array.from(this.version), 'VIST')
 
     if (args.screen) file.screen = this.screen
     file.model = this.model
@@ -150,10 +146,7 @@ export abstract class AppState<
         array = data
       }
 
-      file = nstructjs.readObject(
-        new DataView(array),
-        MyFileExport,
-      ) as MyFileExport
+      file = nstructjs.readObject(new DataView(array), MyFileExport) as MyFileExport
     }
 
     console.log(file)
@@ -187,17 +180,14 @@ export abstract class AppState<
   saveLocalStorage() {
     const save = this.save({ json: true, screen: true }) as string
     localStorage[this.localStorageKey] = save
-    console.log(
-      'saved to local storgae',
-      (save.length / 1024).toFixed(2) + 'kb',
-    )
+    console.log('saved to local storgae', (save.length / 1024).toFixed(2) + 'kb')
   }
 
   loadLocalStorage() {
     if (!(this.localStorageKey in localStorage)) return false
     try {
       this.load(localStorage[this.localStorageKey], {
-        json: true,
+        json  : true,
         screen: true,
       })
       return true
@@ -245,10 +235,10 @@ export abstract class AppState<
   }
   getPathuxConfig(): IPathUXConstants {
     return {
-      autoSizeUpdate: true,
-      useAreaTabSwitcher: true,
+      autoSizeUpdate     : true,
+      useAreaTabSwitcher : true,
       showPathsInToolTips: true,
-      colorSchemeType: 'dark',
+      colorSchemeType    : 'dark',
       DEBUG: {
         modalEvents: true,
       },
@@ -256,6 +246,14 @@ export abstract class AppState<
   }
 
   start() {
+    // define console debug global
+    Object.defineProperty(window, 'C', {
+      get() {
+        return _appstate.ctx
+      },
+      configurable: true,
+    })
+
     nstructjs.validateStructs()
 
     cconst.loadConstants(this.getPathuxConfig())

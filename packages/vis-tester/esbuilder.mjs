@@ -4,7 +4,7 @@ import esbuild from 'esbuild'
 await esbuild.build({
   entryPoints: entryfiles,
   outdir: 'dist',
-  sourcemap: 'linked',
+  sourcemap: 'inline',
   bundle: true,
   target: 'es2022',
   format: 'esm',

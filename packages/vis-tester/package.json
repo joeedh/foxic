@@ -6,7 +6,11 @@
     },
     "devDependencies": {
         "esbuild": "^0.28.0",
-        "path.ux": "workspace:*"
+        "path.ux": "workspace:*",
+        "@gametest/meshlib": "workspace:*",
+        "@gametest/utils": "workspace:*",
+        "@gametest/math": "workspace:*",
+        "@gametest/tsconfig": "workspace:*"
     },
     "dependencies": {
         "@typescript/native-preview": "7.0.0-dev.20260414.1",

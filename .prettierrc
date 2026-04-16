@@ -1,7 +1,8 @@
 {
+  "alignPropertyValues": "group",
   "semi": false,
   "singleQuote": true,
   "trailingComma": "all",
-  "printWidth": 80,
+  "printWidth": 90,
   "tabWidth": 2
 }

@@ -1,4 +1,5 @@
-import {Edge, Mesh, MeshTypes, MeshVector, Element, Vertex, Face} from './mesh';
+import {Edge, Mesh, MeshVector, Element, Vertex, Face} from './mesh';
+import { MeshTypes } from './mesh_base';
 
 export function vertexSmooth(mesh: Mesh, verts: Iterable<Vertex> = mesh.verts, fac = 0.5, doHandles = true) {
   let co = new MeshVector();
