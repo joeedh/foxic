@@ -1,4 +1,6 @@
 packages:
   - packages/**
+  - src
+  - vite/packages/**
 patchedDependencies:
   mcp-image: patches/mcp-image.patch

@@ -1,0 +1,4 @@
+{
+  "extends": "@gametest/tsconfig/tsconfig.json",
+  "include": ["*.ts"]
+}

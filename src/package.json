@@ -2,24 +2,23 @@
   "name": "gametest",
   "type": "module",
   "scripts": {
-    "dev": "cd src; npx vite",
+    "dev": "npx vite",
     "build": "npx tsgo && vite build",
-    "preview": "cd src; vite preview",
+    "preview": "npx vite preview",
     "format": "prettier --write src/ index.html",
     "playwright": "npx playwright test",
     "typecheck": "npx tsgo --noEmit"
   },
   "devDependencies": {
+    "@gametest/tsconfig": "workspace:*",
+    "@gametest/utils": "workspace:*",
     "@pathtx/prettier": "3.3.0-dev",
     "@playwright/test": "^1.59.1",
     "@typescript/native-preview": "7.0.0-dev.20260414.1",
     "mcp-image": "^0.10.0",
     "prettier": "^3.8.1",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8"
   },
-  "packageManager": "pnpm@10.30.3",
-  "workspaces": [
-    "packages/**",
-    "src"
-  ]
+  "packageManager": "pnpm@10.30.3"
 }

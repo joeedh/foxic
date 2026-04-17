@@ -1,4 +1,4 @@
-import { InsecureHashDigest } from '../../util/hashDigest'
+import { InsecureHashDigest } from '@gametest/utils'
 import { Texture } from './texture'
 import { VertexArrayTarget } from './vertexArray'
 
