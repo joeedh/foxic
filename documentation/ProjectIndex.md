@@ -2,7 +2,7 @@
 
 ## Overview
 
-2D Sonic-style platformer built with TypeScript, a custom WebGL2 renderer, and Vite. Features momentum-based physics, tile-based levels with per-tile heightmaps, and an immediate-mode batch rendering pipeline.
+2D Sonic-style platformer built with TypeScript, a custom WebGL2 renderer, and esbuild. Features momentum-based physics, tile-based levels with per-tile heightmaps, and an immediate-mode batch rendering pipeline.
 
 ## Structure
 
@@ -131,18 +131,17 @@ Rendering Pipeline:
 ## Commands
 
 ```bash
-pnpm dev         # Dev server with HMR (localhost:5173)
-pnpm build       # TypeScript check + Vite build
-pnpm preview     # Preview built game
+pnpm dev         # Dev server (localhost:5723, esbuild-serve)
+pnpm build       # TypeScript check (tsgo --noEmit)
 pnpm format      # Run Prettier on src/ and index.html
-pnpm typecheck   # TypeScript check only (tsc --noEmit)
+pnpm typecheck   # TypeScript check only (tsgo --noEmit)
 pnpm playwright  # Run Playwright E2E tests
 ```
 
 ## Dependencies
 
 **Runtime:** none (custom WebGL2 renderer)
-**Dev:** typescript v6.0.2, vite v8.0.3, prettier v3.8.1, playwright v1.59.1, mcp-image v0.10.0
+**Dev:** typescript v6.0.2, esbuild v0.28.0, prettier v3.8.1, playwright v1.59.1, mcp-image v0.10.0
 
 ## Architecture Highlights
 
