@@ -5,6 +5,7 @@
     "dev": "pnpm --filter @gametest/main dev",
     "build": "turbo build",
     "format": "turbo format",
+    "clean": "node tools/clean.mjs",
     "playwright": "npx playwright test",
     "typecheck": "npx tsgo --noEmit"
   },
