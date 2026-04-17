@@ -7,16 +7,16 @@ export enum Action {
 }
 
 const keyMap: Record<string, Action> = {
-  ArrowLeft: Action.Left,
+  ArrowLeft : Action.Left,
   ArrowRight: Action.Right,
-  ArrowUp: Action.Up,
-  ArrowDown: Action.Down,
-  KeyZ: Action.Jump,
-  Space: Action.Jump,
-  KeyA: Action.Left,
-  KeyD: Action.Right,
-  KeyW: Action.Up,
-  KeyS: Action.Down,
+  ArrowUp   : Action.Up,
+  ArrowDown : Action.Down,
+  KeyZ      : Action.Jump,
+  Space     : Action.Jump,
+  KeyA      : Action.Left,
+  KeyD      : Action.Right,
+  KeyW      : Action.Up,
+  KeyS      : Action.Down,
 }
 
 const currentFrame = new Set<Action>()

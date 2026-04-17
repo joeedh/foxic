@@ -56,11 +56,11 @@ export class SensorSystem {
     const ground = this.tileMap.getGroundHeight(x, y, maxDist, depth)
     if (ground === undefined) return noHit(x, y + maxDist, maxDist)
     return {
-      hit: true,
+      hit     : true,
       distance: ground.y - y,
       surfaceY: ground.y,
       surfaceX: x,
-      angle: ground.angle,
+      angle   : ground.angle,
     }
   }
 
@@ -70,18 +70,8 @@ export class SensorSystem {
     maxDist: number = 32,
     depth: number = 0,
   ): SensorResult {
-    const sensorA = this.castFloorSensor(
-      centerX - PLAYER_RADIUS,
-      bottomY,
-      maxDist,
-      depth,
-    )
-    const sensorB = this.castFloorSensor(
-      centerX + PLAYER_RADIUS,
-      bottomY,
-      maxDist,
-      depth,
-    )
+    const sensorA = this.castFloorSensor(centerX - PLAYER_RADIUS, bottomY, maxDist, depth)
+    const sensorB = this.castFloorSensor(centerX + PLAYER_RADIUS, bottomY, maxDist, depth)
 
     if (!sensorA.hit && !sensorB.hit) {
       return noHit(centerX, bottomY + maxDist, maxDist)
@@ -113,21 +103,9 @@ export class SensorSystem {
       case SensorMode.Ceiling:
         return this.castCeilingSensorsForMode(centerX, centerY, maxDist, depth)
       case SensorMode.RightWall:
-        return this.castRightWallSensorsForMode(
-          centerX,
-          centerY,
-          height,
-          maxDist,
-          depth,
-        )
+        return this.castRightWallSensorsForMode(centerX, centerY, height, maxDist, depth)
       case SensorMode.LeftWall:
-        return this.castLeftWallSensorsForMode(
-          centerX,
-          centerY,
-          height,
-          maxDist,
-          depth,
-        )
+        return this.castLeftWallSensorsForMode(centerX, centerY, height, maxDist, depth)
     }
   }
 
@@ -155,20 +133,20 @@ export class SensorSystem {
     }
     if (leftResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: topY - rightResult!.y,
         surfaceY: rightResult!.y,
         surfaceX: centerX,
-        angle: rightResult!.angle,
+        angle   : rightResult!.angle,
       }
     }
     if (rightResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: topY - leftResult.y,
         surfaceY: leftResult.y,
         surfaceX: centerX,
-        angle: leftResult.angle,
+        angle   : leftResult.angle,
       }
     }
 
@@ -177,7 +155,7 @@ export class SensorSystem {
     const angle = Math.atan2(dy, dx)
     const closer = leftResult.y >= rightResult.y ? leftResult : rightResult
     return {
-      hit: true,
+      hit     : true,
       distance: topY - closer.y,
       surfaceY: closer.y,
       surfaceX: centerX,
@@ -193,12 +171,7 @@ export class SensorSystem {
     depth: number,
   ): SensorResult {
     const rightEdge = centerX + PLAYER_RADIUS
-    const topResult = this.tileMap.getRightWallSurface(
-      centerY,
-      rightEdge,
-      maxDist,
-      depth,
-    )
+    const topResult = this.tileMap.getRightWallSurface(centerY, rightEdge, maxDist, depth)
     const bottomResult = this.tileMap.getRightWallSurface(
       centerY + height,
       rightEdge,
@@ -211,30 +184,30 @@ export class SensorSystem {
     }
     if (topResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: bottomResult!.x - rightEdge,
         surfaceY: centerY,
         surfaceX: bottomResult!.x,
-        angle: bottomResult!.angle,
+        angle   : bottomResult!.angle,
       }
     }
     if (bottomResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: topResult.x - rightEdge,
         surfaceY: centerY,
         surfaceX: topResult.x,
-        angle: topResult.angle,
+        angle   : topResult.angle,
       }
     }
 
     const closer = topResult.x <= bottomResult.x ? topResult : bottomResult
     return {
-      hit: true,
+      hit     : true,
       distance: closer.x - rightEdge,
       surfaceY: centerY,
       surfaceX: closer.x,
-      angle: closer.angle,
+      angle   : closer.angle,
     }
   }
 
@@ -246,12 +219,7 @@ export class SensorSystem {
     depth: number,
   ): SensorResult {
     const leftEdge = centerX - PLAYER_RADIUS
-    const topResult = this.tileMap.getLeftWallSurface(
-      centerY,
-      leftEdge,
-      maxDist,
-      depth,
-    )
+    const topResult = this.tileMap.getLeftWallSurface(centerY, leftEdge, maxDist, depth)
     const bottomResult = this.tileMap.getLeftWallSurface(
       centerY + height,
       leftEdge,
@@ -264,30 +232,30 @@ export class SensorSystem {
     }
     if (topResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: leftEdge - bottomResult!.x,
         surfaceY: centerY,
         surfaceX: bottomResult!.x,
-        angle: bottomResult!.angle,
+        angle   : bottomResult!.angle,
       }
     }
     if (bottomResult === undefined) {
       return {
-        hit: true,
+        hit     : true,
         distance: leftEdge - topResult.x,
         surfaceY: centerY,
         surfaceX: topResult.x,
-        angle: topResult.angle,
+        angle   : topResult.angle,
       }
     }
 
     const closer = topResult.x >= bottomResult.x ? topResult : bottomResult
     return {
-      hit: true,
+      hit     : true,
       distance: leftEdge - closer.x,
       surfaceY: centerY,
       surfaceX: closer.x,
-      angle: closer.angle,
+      angle   : closer.angle,
     }
   }
 
@@ -306,11 +274,7 @@ export class SensorSystem {
     return { hit: false, wallX: checkX }
   }
 
-  castCeilingSensor(
-    x: number,
-    topY: number,
-    depth: number = 0,
-  ): CeilingSensorResult {
+  castCeilingSensor(x: number, topY: number, depth: number = 0): CeilingSensorResult {
     const left = this.tileMap.getCeiling(x - PLAYER_RADIUS, topY, depth)
     const right = this.tileMap.getCeiling(x + PLAYER_RADIUS, topY, depth)
 

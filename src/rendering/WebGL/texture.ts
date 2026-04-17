@@ -71,17 +71,7 @@ export class Texture {
     gl.bindTexture(gl.TEXTURE_2D, this.glTexture!)
 
     const internalFormat = type === gl.FLOAT ? gl.RGBA32F : gl.RGBA
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      internalFormat,
-      width,
-      height,
-      0,
-      gl.RGBA,
-      type,
-      data,
-    )
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, gl.RGBA, type, data)
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)

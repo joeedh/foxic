@@ -20,7 +20,7 @@ export function getContext(
 ): WebGL2RenderingContext {
   const gl = canvas.getContext('webgl2', {
     antialias: params.antialias,
-    stencil: params.stencil,
+    stencil  : params.stencil,
   }) as WebGL2RenderingContext
 
   canvas.addEventListener('contextlost', () => {
@@ -119,10 +119,7 @@ export function patchDebugGL(gl: WebGL2RenderingContext) {
 
   class DebugBuffer extends WebGLBuffer {
     getParameter(
-      target:
-        | (typeof gl)['ARRAY_BUFFER']
-        | (typeof gl)['ELEMENT_ARRAY_BUFFER']
-        | number,
+      target: (typeof gl)['ARRAY_BUFFER'] | (typeof gl)['ELEMENT_ARRAY_BUFFER'] | number,
       pname: any,
     ) {
       return gl.getBufferParameter(target, pname)

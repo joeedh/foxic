@@ -37,41 +37,32 @@ export async function loadAllAssets(renderer: WebGLRenderer) {
   const itemsTex = renderer.bakeChromaKey(itemsTexRaw)
 
   playerSheet = new SpriteSheet(playerTex, {
-    cols: 4,
-    rows: 2,
-    frameNames: [
-      'idle',
-      'run1',
-      'run2',
-      'run3',
-      'jump',
-      'crouch',
-      'skid',
-      'push',
-    ],
+    cols      : 4,
+    rows      : 2,
+    frameNames: ['idle', 'run1', 'run2', 'run3', 'jump', 'crouch', 'skid', 'push'],
     animations: {
-      idle: ['idle'],
-      run: ['run1', 'run2', 'run3', 'run2'],
-      jump: ['jump'],
+      idle  : ['idle'],
+      run   : ['run1', 'run2', 'run3', 'run2'],
+      jump  : ['jump'],
       crouch: ['crouch'],
-      skid: ['skid'],
-      push: ['push'],
+      skid  : ['skid'],
+      push  : ['push'],
     },
   })
 
   enemiesSheet = new SpriteSheet(enemiesTex, {
-    cols: 3,
-    rows: 2,
+    cols      : 3,
+    rows      : 2,
     frameNames: ['crab1', 'crab2', 'crab3', 'bee1', 'bee2', 'bee3'],
     animations: {
       crab: ['crab1', 'crab2', 'crab3'],
-      bee: ['bee1', 'bee2', 'bee3'],
+      bee : ['bee1', 'bee2', 'bee3'],
     },
   })
 
   itemsSheet = new SpriteSheet(itemsTex, {
-    cols: 4,
-    rows: 2,
+    cols      : 4,
+    rows      : 2,
     frameNames: [
       'ring1',
       'ring2',
@@ -126,15 +117,15 @@ export async function loadAllAssets(renderer: WebGLRenderer) {
   const tileIndustrialTex = renderer.bakeChromaKey(tileIndustrialTexRaw)
 
   tileSheets['greenhill'] = new SpriteSheet(tileGreenhillTex, {
-    cols: 5,
-    rows: 3,
+    cols      : 5,
+    rows      : 3,
     frameNames: tileFrameNames,
     borderTrim: 40.0,
   })
 
   tileSheets['industrial'] = new SpriteSheet(tileIndustrialTex, {
-    cols: 5,
-    rows: 3,
+    cols      : 5,
+    rows      : 3,
     frameNames: tileFrameNames,
     borderTrim: 40.0,
   })
@@ -171,10 +162,7 @@ export function getRingAnimation(): Frame[] {
   return itemsSheet.animations.ring
 }
 
-export function getSpringFrame(
-  color: 'yellow' | 'red',
-  compressed: boolean,
-): Frame {
+export function getSpringFrame(color: 'yellow' | 'red', compressed: boolean): Frame {
   const state = compressed ? 'compressed' : 'extended'
   return itemsSheet.frames[`spring_${color}_${state}`]
 }

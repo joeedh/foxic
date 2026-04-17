@@ -32,10 +32,7 @@ export class AnimationController {
     if (!anim || anim.frames.length <= 1) return
 
     this.tickCounter++
-    const threshold = Math.max(
-      1,
-      Math.round(anim.ticksPerFrame / this.speedMultiplier),
-    )
+    const threshold = Math.max(1, Math.round(anim.ticksPerFrame / this.speedMultiplier))
     if (this.tickCounter >= threshold) {
       this.tickCounter = 0
       this.frameIndex++

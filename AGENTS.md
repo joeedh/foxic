@@ -35,7 +35,7 @@
 
 # Commands
 
-* `pnpm dev` — start Vite dev server
+* `pnpm dev` — start esbuild dev server
 * `pnpm build` — typecheck and build for production
 * `pnpm typecheck` — run `npx tsgo --noEmit`
 * `pnpm format` — run Prettier

@@ -28,27 +28,7 @@ export class ParallaxBackground {
   render(renderer: WebGLRenderer) {
     if (!this.bgTexture) return
     const w = SCREEN_WIDTH * 2
-    renderer.drawSprite(
-      this.bgTexture,
-      this.layer0X,
-      0,
-      w,
-      SCREEN_HEIGHT,
-      0,
-      0,
-      1,
-      1,
-    )
-    renderer.drawSprite(
-      this.bgTexture,
-      this.layer1X,
-      0,
-      w,
-      SCREEN_HEIGHT,
-      0,
-      0,
-      1,
-      1,
-    )
+    renderer.drawSprite(this.bgTexture, this.layer0X, 0, w, SCREEN_HEIGHT, 0, 0, 1, 1)
+    renderer.drawSprite(this.bgTexture, this.layer1X, 0, w, SCREEN_HEIGHT, 0, 0, 1, 1)
   }
 }

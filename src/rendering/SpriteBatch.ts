@@ -75,8 +75,8 @@ export class SpriteBatch {
     // currentTexture is always set when quadCount > 0
     this.batch.bind(gl, this.shader, {
       uResolution: this.currentResolution,
-      uOffset: this.currentOffset,
-      uTexture: this.currentTexture!,
+      uOffset    : this.currentOffset,
+      uTexture   : this.currentTexture!,
     })
     this.stats.drawCalls++
     this.stats.quads += this.quadCount

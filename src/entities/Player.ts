@@ -47,46 +47,46 @@ export class Player implements GameEntity {
     this.physics = {
       x,
       y,
-      xSpeed: 0,
-      ySpeed: 0,
-      groundSpeed: 0,
-      groundAngle: 0,
-      onGround: false,
-      pushing: false,
+      xSpeed          : 0,
+      ySpeed          : 0,
+      groundSpeed     : 0,
+      groundAngle     : 0,
+      onGround        : false,
+      pushing         : false,
       controlLockTimer: 0,
-      currentDepth: 0,
+      currentDepth    : 0,
     }
 
     this.anim = new AnimationController()
     this.anim.define('idle', {
-      frames: ['idle'],
+      frames       : ['idle'],
       ticksPerFrame: 1,
-      loop: false,
+      loop         : false,
     })
     this.anim.define('run', {
-      frames: ['run1', 'run2', 'run3', 'run2'],
+      frames       : ['run1', 'run2', 'run3', 'run2'],
       ticksPerFrame: 15,
-      loop: true,
+      loop         : true,
     })
     this.anim.define('jump', {
-      frames: ['jump'],
+      frames       : ['jump'],
       ticksPerFrame: 1,
-      loop: false,
+      loop         : false,
     })
     this.anim.define('crouch', {
-      frames: ['crouch'],
+      frames       : ['crouch'],
       ticksPerFrame: 1,
-      loop: false,
+      loop         : false,
     })
     this.anim.define('skid', {
-      frames: ['skid'],
+      frames       : ['skid'],
       ticksPerFrame: 1,
-      loop: false,
+      loop         : false,
     })
     this.anim.define('push', {
-      frames: ['push'],
+      frames       : ['push'],
       ticksPerFrame: 1,
-      loop: false,
+      loop         : false,
     })
     this.anim.play('idle')
 
@@ -126,10 +126,7 @@ export class Player implements GameEntity {
 
         if (!p.physics.onGround) {
           p.sm.transition('falling')
-        } else if (
-          pressed(Action.Down) &&
-          Math.abs(p.physics.groundSpeed) > 1
-        ) {
+        } else if (pressed(Action.Down) && Math.abs(p.physics.groundSpeed) > 1) {
           p.sm.transition('rolling')
         } else if (p.physics.groundSpeed === 0 && !left && !right) {
           p.sm.transition('idle')
@@ -139,8 +136,7 @@ export class Player implements GameEntity {
         }
 
         const isSkidding =
-          (right && p.physics.groundSpeed < -0.5) ||
-          (left && p.physics.groundSpeed > 0.5)
+          (right && p.physics.groundSpeed < -0.5) || (left && p.physics.groundSpeed > 0.5)
         if (p.physics.pushing) {
           p.anim.play('push')
         } else if (isSkidding) {
@@ -298,10 +294,7 @@ export class Player implements GameEntity {
     const frame = getPlayerFrame(frameName)
 
     let alpha = 1
-    if (
-      this.invincibleTimer > 0 &&
-      Math.floor(this.invincibleTimer / 4) % 2 === 0
-    ) {
+    if (this.invincibleTimer > 0 && Math.floor(this.invincibleTimer / 4) % 2 === 0) {
       alpha = 0.4
     }
 

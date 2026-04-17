@@ -71,47 +71,47 @@ void main() {
 `
 
 export const spriteDef = {
-  vertexSource: SPRITE_VERT,
+  vertexSource  : SPRITE_VERT,
   fragmentSource: SPRITE_FRAG,
   uniforms: {
     uResolution: {
-      type: GLType.Vec2,
+      type   : GLType.Vec2,
       default: [0, 0] as [number, number],
     },
     uOffset: {
-      type: GLType.Vec2,
+      type   : GLType.Vec2,
       default: [0, 0] as [number, number],
     },
-    uTexture: { type: GLType.Sampler2D, default: 0 },
+    uTexture   : { type: GLType.Sampler2D, default: 0 },
   },
   attrs: {
     aPosition: { type: AttrType.Vec2, size: 2 as const },
     aTexCoord: { type: AttrType.Vec2, size: 2 as const },
-    aColor: { type: AttrType.Vec4, size: 4 as const },
+    aColor   : { type: AttrType.Vec4, size: 4 as const },
     aIndices: {
-      type: AttrType.UShort,
-      size: 1 as const,
+      type  : AttrType.UShort,
+      size  : 1 as const,
       target: VertexArrayTarget.ElementArrayBuffer,
     },
   },
 }
 
 export const chromakeyDef = {
-  vertexSource: CK_VERT,
+  vertexSource  : CK_VERT,
   fragmentSource: CK_FRAG,
   uniforms: {
     uResolution: {
-      type: GLType.Vec2,
+      type   : GLType.Vec2,
       default: [0, 0] as [number, number],
     },
-    uTexture: { type: GLType.Sampler2D, default: 0 },
+    uTexture   : { type: GLType.Sampler2D, default: 0 },
   },
   attrs: {
     aPosition: { type: AttrType.Vec2, size: 2 as const },
     aTexCoord: { type: AttrType.Vec2, size: 2 as const },
     aIndices: {
-      type: AttrType.UShort,
-      size: 1 as const,
+      type  : AttrType.UShort,
+      size  : 1 as const,
       target: VertexArrayTarget.ElementArrayBuffer,
     },
   },

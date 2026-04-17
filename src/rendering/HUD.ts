@@ -2,11 +2,11 @@ import type { WebGLRenderer } from './WebGLRenderer'
 import { TextRenderer, type TextStyleDef } from './TextRenderer'
 
 const hudStyle: TextStyleDef = {
-  fontFamily: 'monospace',
-  fontSize: 16,
-  fill: '#ffffff',
-  fontWeight: 'bold',
-  stroke: '#000000',
+  fontFamily : 'monospace',
+  fontSize   : 16,
+  fill       : '#ffffff',
+  fontWeight : 'bold',
+  stroke     : '#000000',
   strokeWidth: 3,
 }
 

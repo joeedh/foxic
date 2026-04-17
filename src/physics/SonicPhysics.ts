@@ -148,10 +148,7 @@ export class SonicPhysics {
 
       // Fall-off check: detach if too slow on steep surfaces
       const absAngle = Math.abs(state.groundAngle)
-      if (
-        absAngle > Math.PI / 4 &&
-        Math.abs(state.groundSpeed) < FALL_OFF_SPEED
-      ) {
+      if (absAngle > Math.PI / 4 && Math.abs(state.groundSpeed) < FALL_OFF_SPEED) {
         state.onGround = false
         state.groundAngle = 0
         state.controlLockTimer = CONTROL_LOCK_FRAMES
@@ -235,19 +232,13 @@ export class SonicPhysics {
 
     // 5. Floor check (landing)
     if (state.ySpeed >= 0) {
-      const floor = this.sensors.castFloorSensors(
-        state.x,
-        state.y + height,
-        8,
-        d,
-      )
+      const floor = this.sensors.castFloorSensors(state.x, state.y + height, 8, d)
       if (floor.hit && floor.distance <= 0) {
         state.y = floor.surfaceY - height
         state.groundAngle = floor.angle
         state.onGround = true
         state.groundSpeed =
-          state.xSpeed * Math.cos(floor.angle) -
-          state.ySpeed * Math.sin(floor.angle)
+          state.xSpeed * Math.cos(floor.angle) - state.ySpeed * Math.sin(floor.angle)
       }
     }
 

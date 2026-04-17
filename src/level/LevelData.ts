@@ -362,15 +362,15 @@ export function createLevel1(): LevelDefinition {
     // Zone A: Intro rings - simple line to collect (cols 8-14)
     ...Array.from({ length: 4 }, (_, i) => ({
       type: 'ring' as const,
-      x: (8 + i * 2) * 16 + 8,
-      y: 24 * 16,
+      x   : (8 + i * 2) * 16 + 8,
+      y   : 24 * 16,
     })),
 
     // Zone B: Rings along first hilltop (cols 24-28)
     ...Array.from({ length: 3 }, (_, i) => ({
       type: 'ring' as const,
-      x: (25 + i * 2) * 16 + 8,
-      y: 22 * 16,
+      x   : (25 + i * 2) * 16 + 8,
+      y   : 22 * 16,
     })),
 
     // Zone B: Rings on second small hill
@@ -379,15 +379,15 @@ export function createLevel1(): LevelDefinition {
     // Zone C: Ring arc over steep hilltop (cols 54-58)
     ...Array.from({ length: 5 }, (_, i) => ({
       type: 'ring' as const,
-      x: (54 + i) * 16 + 8,
-      y: 20 * 16,
+      x   : (54 + i) * 16 + 8,
+      y   : 20 * 16,
     })),
 
     // Zone D: Rings on floating platforms
     ...Array.from({ length: 3 }, (_, i) => ({
       type: 'ring' as const,
-      x: (80 + i) * 16 + 8,
-      y: 21 * 16,
+      x   : (80 + i) * 16 + 8,
+      y   : 21 * 16,
     })),
     // Secret high rings
     { type: 'ring', x: 89 * 16 + 8, y: 15 * 16 },
@@ -396,15 +396,15 @@ export function createLevel1(): LevelDefinition {
     // Zone E: Rings inside tunnel (cols 100-116)
     ...Array.from({ length: 4 }, (_, i) => ({
       type: 'ring' as const,
-      x: (101 + i * 4) * 16 + 8,
-      y: 24 * 16,
+      x   : (101 + i * 4) * 16 + 8,
+      y   : 24 * 16,
     })),
 
     // Zone F: Rings along the climb
     ...Array.from({ length: 3 }, (_, i) => ({
       type: 'ring' as const,
-      x: (136 + i * 2) * 16 + 8,
-      y: 19 * 16,
+      x   : (136 + i * 2) * 16 + 8,
+      y   : 19 * 16,
     })),
 
     // Zone G: Rings on stepping stones
@@ -418,8 +418,8 @@ export function createLevel1(): LevelDefinition {
     // Zone H: Finish line rings
     ...Array.from({ length: 3 }, (_, i) => ({
       type: 'ring' as const,
-      x: (194 + i * 2) * 16 + 8,
-      y: 24 * 16,
+      x   : (194 + i * 2) * 16 + 8,
+      y   : 24 * 16,
     })),
 
     // --- ENEMIES ---
@@ -483,24 +483,24 @@ export function createLevel1(): LevelDefinition {
     // --- DEPTH TRIGGERS for loop ---
     // Left trigger (enter loop going right, or exit going left)
     {
-      type: 'depthTrigger',
-      x: 67 * 16 + 8,
-      y: 24 * 16,
+      type      : 'depthTrigger',
+      x         : 67 * 16 + 8,
+      y         : 24 * 16,
       properties: { fromDepth: 0, toDepth: 1 },
     },
     // Right trigger (exit loop going right, or enter going left)
     {
-      type: 'depthTrigger',
-      x: 74 * 16 + 8,
-      y: 24 * 16,
+      type      : 'depthTrigger',
+      x         : 74 * 16 + 8,
+      y         : 24 * 16,
       properties: { fromDepth: 0, toDepth: 1 },
     },
   ]
 
   return {
-    name: 'Green Hill',
-    width: W,
-    height: H,
+    name    : 'Green Hill',
+    width   : W,
+    height  : H,
     tileGrid: grid,
     depthGrid,
     entities,
@@ -609,14 +609,14 @@ export function createLevel2(): LevelDefinition {
     // Rings along elevated corridor
     ...Array.from({ length: 10 }, (_, i) => ({
       type: 'ring',
-      x: (28 + i * 2) * 16 + 8,
-      y: 19 * 16,
+      x   : (28 + i * 2) * 16 + 8,
+      y   : 19 * 16,
     })),
     // Rings on floating platforms
     ...Array.from({ length: 3 }, (_, i) => ({
       type: 'ring',
-      x: (94 + i) * 16 + 8,
-      y: 17 * 16,
+      x   : (94 + i) * 16 + 8,
+      y   : 17 * 16,
     })),
     // Enemies
     { type: 'crab', x: 35 * 16, y: 20 * 16 },
@@ -631,9 +631,9 @@ export function createLevel2(): LevelDefinition {
   ]
 
   return {
-    name: 'Mechanical Plant',
-    width: W,
-    height: H,
+    name    : 'Mechanical Plant',
+    width   : W,
+    height  : H,
     tileGrid: grid,
     entities,
     playerStart: { x: 3 * 16, y: 24 * 16 },

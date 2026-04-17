@@ -16,11 +16,7 @@ export function aabbOverlap(a: AABB, b: AABB): boolean {
   )
 }
 
-export function playerAABB(
-  state: PhysicsState,
-  width: number,
-  height: number,
-): AABB {
+export function playerAABB(state: PhysicsState, width: number, height: number): AABB {
   return {
     x: state.x - width / 2,
     y: state.y,

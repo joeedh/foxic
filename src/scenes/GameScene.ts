@@ -4,12 +4,7 @@ import type { LevelDefinition } from '../level/LevelData'
 import { HUD } from '../rendering/HUD'
 import { ParallaxBackground } from '../rendering/ParallaxBackground'
 import { pressed, Action } from '../input'
-import {
-  PLAYER_WIDTH,
-  TILE_SIZE,
-  SCREEN_WIDTH,
-  SCREEN_HEIGHT,
-} from '../constants'
+import { PLAYER_WIDTH, TILE_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT } from '../constants'
 import { aabbOverlap, playerAABB } from '../physics/CollisionDetection'
 import { ScatteredRing } from '../entities/Ring'
 import { ParticleSystem } from '../rendering/Particles'
@@ -72,9 +67,9 @@ export class GameScene implements Scene {
       if (!entity.active) continue
 
       const eBox = {
-        x: entity.x - entity.width / 2,
-        y: entity.y - entity.height / 2,
-        width: entity.width,
+        x     : entity.x - entity.width / 2,
+        y     : entity.y - entity.height / 2,
+        width : entity.width,
         height: entity.height,
       }
 
@@ -115,21 +110,14 @@ export class GameScene implements Scene {
       this.dustTimer++
       if (this.dustTimer % 4 === 0) {
         const dir = player.physics.groundSpeed > 0 ? 1 : -1
-        this.particles.emitDust(
-          player.physics.x,
-          player.physics.y + player.height,
-          dir,
-        )
+        this.particles.emitDust(player.physics.x, player.physics.y + player.height, dir)
       }
     } else {
       this.dustTimer = 0
     }
 
     if (player.state === 'spindash') {
-      this.particles.emitSpindashSpark(
-        player.physics.x,
-        player.physics.y + player.height,
-      )
+      this.particles.emitSpindashSpark(player.physics.x, player.physics.y + player.height)
     }
 
     this.particles.update()

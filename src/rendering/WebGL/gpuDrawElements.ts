@@ -1,9 +1,4 @@
-import type {
-  AttrBlock,
-  AttrType,
-  AttrTypeDef,
-  UniformSet,
-} from './shaderprogram'
+import type { AttrBlock, AttrType, AttrTypeDef, UniformSet } from './shaderprogram'
 import { glTypeToEnum, type Shader } from './shaderprogram'
 import { VertexArray, VertexArrayTarget } from './vertexArray'
 
@@ -51,9 +46,7 @@ export class GPUDrawElements<ATTRS extends AttrBlock> {
     return lastElement
   }
 
-  getArray<KEY extends keyof ATTRS>(
-    key: KEY,
-  ): VertexArray<ATTRS[KEY]['type']>['data'] {
+  getArray<KEY extends keyof ATTRS>(key: KEY): VertexArray<ATTRS[KEY]['type']>['data'] {
     return this.vertexData[key].data
   }
 

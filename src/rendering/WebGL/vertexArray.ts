@@ -89,12 +89,7 @@ export class VertexArray<T extends AttrType> {
   private uploaded = false
 
   /** size is number of elements per vertex*/
-  constructor(
-    type: T,
-    target: VertexArrayTarget,
-    size: number,
-    data?: VertexData,
-  ) {
+  constructor(type: T, target: VertexArrayTarget, size: number, data?: VertexData) {
     this.type = type
     const cls = getTypedArrayClsFromType(type)
     this.data = new cls(data as TypedArrayFromGL[T] | number[])

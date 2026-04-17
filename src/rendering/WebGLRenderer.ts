@@ -62,7 +62,7 @@ export class WebGLRenderer {
     this.canvas.style.height = `${height}px`
 
     const gl = this.canvas.getContext('webgl2', {
-      alpha: false,
+      alpha    : false,
       antialias: false,
     })
     if (!gl) throw new Error('WebGL2 not supported')
@@ -77,10 +77,7 @@ export class WebGLRenderer {
     this.batch.currentResolution[1] = height
 
     this.chromakeyShader = new ShaderProgramBase(gl, chromakeyDef)
-    this.chromaBatch = new GPUDrawElements(
-      chromakeyDef.attrs,
-      6 /* INDICES_PER_QUAD */,
-    )
+    this.chromaBatch = new GPUDrawElements(chromakeyDef.attrs, 6 /* INDICES_PER_QUAD */)
     this.chromaBatch.vertexData.aPosition.growData(4)
     this.chromaBatch.vertexData.aTexCoord.growData(4)
     this.chromaBatch.growElements(1)
@@ -238,24 +235,7 @@ export class WebGLRenderer {
     a: number,
   ): void {
     this.batch.setTexture(this.gl, this.whiteTexture)
-    this.batch.writeQuad(
-      x,
-      y,
-      x + w,
-      y,
-      x,
-      y + h,
-      x + w,
-      y + h,
-      0,
-      0,
-      1,
-      1,
-      r,
-      g,
-      b,
-      a,
-    )
+    this.batch.writeQuad(x, y, x + w, y, x, y + h, x + w, y + h, 0, 0, 1, 1, r, g, b, a)
   }
 
   // --- Camera offset ---
@@ -288,8 +268,8 @@ export class WebGLRenderer {
     const gl = this.gl
     this.renderTargetStack.push({
       framebuffer: gl.getParameter(gl.FRAMEBUFFER_BINDING),
-      viewport: gl.getParameter(gl.VIEWPORT),
-      resolution: [this.logicalWidth, this.logicalHeight],
+      viewport   : gl.getParameter(gl.VIEWPORT),
+      resolution : [this.logicalWidth, this.logicalHeight],
     })
     gl.bindFramebuffer(gl.FRAMEBUFFER, target.framebuffer)
     gl.viewport(0, 0, target.texture.width, target.texture.height)
@@ -303,12 +283,7 @@ export class WebGLRenderer {
     const prev = this.renderTargetStack.pop()
     if (prev) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, prev.framebuffer)
-      gl.viewport(
-        prev.viewport[0],
-        prev.viewport[1],
-        prev.viewport[2],
-        prev.viewport[3],
-      )
+      gl.viewport(prev.viewport[0], prev.viewport[1], prev.viewport[2], prev.viewport[3])
       this.batch.currentResolution[0] = prev.resolution[0]
       this.batch.currentResolution[1] = prev.resolution[1]
     } else {
@@ -356,7 +331,7 @@ export class WebGLRenderer {
 
     this.chromaBatch.bind(gl, this.chromakeyShader, {
       uResolution: [w, h],
-      uTexture: source,
+      uTexture   : source,
     })
 
     gl.enable(gl.BLEND)

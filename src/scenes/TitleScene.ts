@@ -5,24 +5,24 @@ import { TextRenderer, type TextStyleDef } from '../rendering/TextRenderer'
 import type { WebGLRenderer } from '../rendering/WebGLRenderer'
 
 const titleStyle: TextStyleDef = {
-  fontFamily: 'monospace',
-  fontSize: 36,
-  fill: '#0060ff',
-  fontWeight: 'bold',
-  stroke: '#ffffff',
+  fontFamily : 'monospace',
+  fontSize   : 36,
+  fill       : '#0060ff',
+  fontWeight : 'bold',
+  stroke     : '#ffffff',
   strokeWidth: 4,
 }
 
 const pressStyle: TextStyleDef = {
   fontFamily: 'monospace',
-  fontSize: 18,
-  fill: '#ffffff',
+  fontSize  : 18,
+  fill      : '#ffffff',
 }
 
 const controlsStyle: TextStyleDef = {
   fontFamily: 'monospace',
-  fontSize: 12,
-  fill: '#cccccc',
+  fontSize  : 12,
+  fill      : '#cccccc',
 }
 
 export class TitleScene implements Scene {

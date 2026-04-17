@@ -18,18 +18,13 @@ export class TileMap {
     return (h ^ (h >>> 16)) >>> 0
   }
 
-  constructor(
-    grid: number[][],
-    tileset: string = 'greenhill',
-    depthGrid?: number[][],
-  ) {
+  constructor(grid: number[][], tileset: string = 'greenhill', depthGrid?: number[][]) {
     this.grid = grid
     this.height = grid.length
     this.width = grid[0].length
     this.pixelWidth = this.width * TILE_SIZE
     this.pixelHeight = this.height * TILE_SIZE
-    this.depthGrid =
-      depthGrid ?? grid.map((row) => new Array(row.length).fill(0))
+    this.depthGrid = depthGrid ?? grid.map((row) => new Array(row.length).fill(0))
     this.tileset = tileset
   }
 
@@ -58,11 +53,7 @@ export class TileMap {
         const variantCount = getTileVariantCount(id)
         const frame =
           variantCount > 0
-            ? getTileFrame(
-                id,
-                this.tileset,
-                TileMap.tileHash(row, col) % variantCount,
-              )
+            ? getTileFrame(id, this.tileset, TileMap.tileHash(row, col) % variantCount)
             : getTileFrame(id, this.tileset)
 
         if (frame) {
@@ -139,8 +130,7 @@ export class TileMap {
   isPixelSolid(pixelX: number, pixelY: number, depth: number = 0): boolean {
     const col = Math.floor(pixelX / TILE_SIZE)
     const row = Math.floor(pixelY / TILE_SIZE)
-    if (col < 0 || col >= this.width || row < 0 || row >= this.height)
-      return false
+    if (col < 0 || col >= this.width || row < 0 || row >= this.height) return false
     if (this.getDepth(col, row) !== depth) return false
     const tile = getTileType(this.grid[row][col])
     if (!tile.solid) return false
@@ -281,11 +271,7 @@ export class TileMap {
     return undefined
   }
 
-  getCeiling(
-    pixelX: number,
-    pixelY: number,
-    depth: number = 0,
-  ): number | undefined {
+  getCeiling(pixelX: number, pixelY: number, depth: number = 0): number | undefined {
     const col = Math.floor(pixelX / TILE_SIZE)
     const row = Math.floor(pixelY / TILE_SIZE)
     if (col < 0 || col >= this.width || row < 0 || row >= this.height) {

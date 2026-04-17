@@ -46,7 +46,7 @@ export interface LoadedLevel {
 
 export function loadLevel(def: LevelDefinition): LoadedLevel {
   const tilesetMap: Record<string, string> = {
-    'Green Hill': 'greenhill',
+    'Green Hill'      : 'greenhill',
     'Mechanical Plant': 'industrial',
   }
   const tileset = tilesetMap[def.name] ?? 'greenhill'
