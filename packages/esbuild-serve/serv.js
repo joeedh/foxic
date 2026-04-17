@@ -3,7 +3,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import fs from 'fs'
 import Path from 'path'
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url'
 
 const options = yargs(hideBin(process.argv))
   .help('help')
@@ -90,7 +90,6 @@ async function startEsbuildServer({ entryFiles, outDir, port, configPath }) {
 
   const ctx = await esbuild.context(options)
 
-  await ctx.serve({ port, servedir: Path.resolve('../public') })
   console.log('Serving at', `http://localhost:${port}`)
-  //await ctx.serve({ port })
+  await ctx.serve({ port: parseInt(port), servedir: Path.resolve('../public') })
 }

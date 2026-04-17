@@ -2,7 +2,7 @@
   "name": "gametest",
   "type": "module",
   "scripts": {
-    "dev": "cd src && pnpm dev",
+    "dev": "pnpm --filter @gametest/main dev",
     "build": "npx tsgo",
     "format": "npx \"@pathtx/prettier\" --write src/",
     "playwright": "npx playwright test",

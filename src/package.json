@@ -1,8 +1,8 @@
 {
-  "name": "gametest",
+  "name": "@gametest/main",
   "type": "module",
   "scripts": {
-    "dev": "npx @gametest/esbuild-serve serv",
+    "dev": "node node_modules/@gametest/esbuild-serve/serv.js serv",
     "build": "",
     "format": "npx @pathtx/prettier --write ./ index.html",
     "playwright": "npx playwright test",

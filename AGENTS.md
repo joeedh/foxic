@@ -3,6 +3,7 @@
 * Save all plans (with descriptive names) to documentation/plans.
 
 # Use tsgo instead of tsc
+
 * Use typescript native (tsgo) instead of tsc.
 
 # Package Manager And Commands
@@ -31,11 +32,12 @@
 
 * Use relative paths — no barrel exports or path aliases
 * Use `import type` for type-only imports
-* Order: pixi.js → core → physics → rendering → entities → local
+* Order: core → physics → rendering → entities → local
 
 # Commands
 
 * `pnpm dev` — start esbuild dev server
+  * run `pnpm dev --port {port}` to run on a different port
 * `pnpm build` — typecheck and build for production
 * `pnpm typecheck` — run `npx tsgo --noEmit`
 * `pnpm format` — run Prettier
