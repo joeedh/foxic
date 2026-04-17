@@ -9,7 +9,7 @@ export const DataModelClasses: IDataClass[] = []
 export function registerDataClass(cls: IDataClass, needsSTRUCT = true) {
   DataModelClasses.push(cls)
   if (needsSTRUCT && !nstructjs.isRegistered(cls)) {
-    throw new Error("Class not registered with nstructjs: " + (cls as any).name)
+    throw new Error('Class not registered with nstructjs: ' + (cls as any).name)
   }
 }
 

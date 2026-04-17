@@ -12,7 +12,5 @@ export {
   type Number3,
   type Number4,
   type IOpenNumVector,
-  type IBaseVector
+  type IBaseVector,
 } from 'path.ux'
-
-

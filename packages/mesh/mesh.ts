@@ -85,10 +85,10 @@ mesh.Element {
 
   toJSON() {
     return {
-      type: this.type,
-      flag: this.flag,
+      type : this.type,
+      flag : this.flag,
       index: this.index,
-      eid: this.eid,
+      eid  : this.eid,
     }
   }
 
@@ -317,14 +317,7 @@ export class Edge extends Element {
   }
 
   offsetDv(t: number, radius: number) {
-    let dv = cubicOffsetDv(
-      this.v1.co,
-      this.h1!.co,
-      this.h2!.co,
-      this.v2.co,
-      t,
-      radius,
-    )
+    let dv = cubicOffsetDv(this.v1.co, this.h1!.co, this.h2!.co, this.v2.co, t, radius)
     return _offset_dvs.next().zero().loadXY(dv[0], dv[1])
   }
 
@@ -332,8 +325,7 @@ export class Edge extends Element {
     let dv1 = this.derivative(t)
     let dv2 = this.derivative2(t)
 
-    let ret =
-      (dv1[0] * dv2[1] - dv1[1] * dv2[0]) / Math.pow(dv1.dot(dv1), 3.0 / 2.0)
+    let ret = (dv1[0] * dv2[1] - dv1[1] * dv2[0]) / Math.pow(dv1.dot(dv1), 3.0 / 2.0)
 
     return ret
   }
@@ -855,10 +847,10 @@ export class ElementArray<E extends Element> {
     }
 
     return {
-      type: this.type,
-      array: arr,
-      selected: sel,
-      active: this.active !== undefined ? this.active.eid : -1,
+      type     : this.type,
+      array    : arr,
+      selected : sel,
+      active   : this.active !== undefined ? this.active.eid : -1,
       highlight: this.highlight !== undefined ? this.highlight.eid : -1,
     }
   }
@@ -1066,9 +1058,7 @@ export class Mesh {
   }
 
   makeVertex(co: Vector3): Vertex {
-    let v = new Vertex(
-      co instanceof Vertex || co instanceof Handle ? co.co : co,
-    )
+    let v = new Vertex(co instanceof Vertex || co instanceof Handle ? co.co : co)
 
     this._element_init(v)
     this.verts.push(v)
@@ -1138,9 +1128,7 @@ export class Mesh {
       this.killEdge(v.edges[0])
 
       if (_i++ >= 100) {
-        console.warn(
-          'mesh integrity warning, infinite loop detected in killVertex',
-        )
+        console.warn('mesh integrity warning, infinite loop detected in killVertex')
       }
     }
 
@@ -1348,8 +1336,7 @@ export class Mesh {
         set_active ||
         !(
           this.edges.active &&
-          (this.edges.active.v1.flag | this.edges.active.v2.flag) &
-            MeshFlags.SELECT
+          (this.edges.active.v1.flag | this.edges.active.v2.flag) & MeshFlags.SELECT
         )
 
       for (let e of this.edges) {

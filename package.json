@@ -3,16 +3,19 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter @gametest/main dev",
-    "build": "npx tsgo",
-    "format": "npx \"@pathtx/prettier\" --write src/",
+    "build": "turbo build",
+    "format": "turbo format",
     "playwright": "npx playwright test",
     "typecheck": "npx tsgo --noEmit"
   },
   "devDependencies": {
     "@pathtx/prettier": "3.3.0-dev",
     "@playwright/test": "^1.59.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.6.0",
     "@typescript/native-preview": "7.0.0-dev.20260414.1",
     "mcp-image": "^0.10.0",
+    "turbo": "^2.9.6",
     "typescript": "^6.0.2"
   },
   "packageManager": "pnpm@10.30.3",

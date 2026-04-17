@@ -1,5 +1,5 @@
 export * from './hashDigest'
-import {util} from 'path.ux'
+import { util } from 'path.ux'
 
 export const cachering = util.cachering
 export type cachering<T> = util.cachering<T>
@@ -13,4 +13,3 @@ export const isMobile = util.isMobile
 export const getClassParent = util.getClassParent
 export const printStack = util.print_stack
 export * from './eventEmitter'
-

@@ -44,6 +44,10 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
     return (this as any).constructor.toolModeDef as IToolModeDef
   }
 
+  static getClass(typeName: string) {
+    return ToolModeClasses.find((cls) => cls.toolModeDef.typeName === typeName)
+  }
+
   static register(cls: any) {
     if (!nstructjs.isRegistered(cls)) {
       throw new Error(cls.name + ' is not registered with nstructjs')
@@ -89,7 +93,7 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
     return undefined
   }
 
-  buildSideBar(container: Container<CTX>) {
+  buildSideBar(toolTab: Container<CTX>, propsTab: Container<CTX>) {
     //
   }
   buildHeader(container: Container<CTX>) {
@@ -124,19 +128,3 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
     this.ctx = ctx
   }
 }
-
-export class EmptyToolMode extends ToolMode {
-  static STRUCT = nstructjs.inlineRegister(this, `DefaultToolMode {}`)
-
-  static readonly toolModeDef = {
-    typeName   : 'default',
-    uiName     : 'Default',
-    description: 'Default tool mode',
-    icon       : Icons.ZOOM_IN,
-  }
-  loadStruct(reader: nstructjs.StructReader<this>) {
-    super.loadStruct(reader)
-    reader(this)
-  }
-}
-ToolMode.register(EmptyToolMode)

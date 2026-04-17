@@ -30,17 +30,17 @@ import type { StructReader } from 'path.ux/scripts/util/nstructjs'
 
 /* maps both name -> proptype and proptype -> name */
 export const PropTypeMap = {
-  float: PropTypes.FLOAT,
-  int: PropTypes.INT,
-  vec2: PropTypes.VEC2,
-  vec3: PropTypes.VEC3,
-  vec4: PropTypes.VEC4,
+  float : PropTypes.FLOAT,
+  int   : PropTypes.INT,
+  vec2  : PropTypes.VEC2,
+  vec3  : PropTypes.VEC3,
+  vec4  : PropTypes.VEC4,
   color3: PropTypes.VEC3,
   color4: PropTypes.VEC4,
   string: PropTypes.STRING,
-  enum: PropTypes.ENUM,
-  flags: PropTypes.FLAG,
-  bool: PropTypes.BOOL,
+  enum  : PropTypes.ENUM,
+  flags : PropTypes.FLAG,
+  bool  : PropTypes.BOOL,
 } as any
 
 for (let k in PropTypeMap) {
@@ -96,10 +96,7 @@ interface IVec3 extends IFloatBase<'vec3', Vector3> {}
 interface IVec4 extends IFloatBase<'vec4', Vector3> {}
 interface IColor3 extends IFloatBase<'color3', Vector3> {}
 interface IColor4 extends IFloatBase<'color4', Vector3> {}
-interface IEnumBase<T extends string, K extends string, V> extends IDefBase<
-  T,
-  V
-> {
+interface IEnumBase<T extends string, K extends string, V> extends IDefBase<T, V> {
   checkStrip?: boolean
   iconMap: {
     [k in K]: number
@@ -111,16 +108,8 @@ interface IEnumBase<T extends string, K extends string, V> extends IDefBase<
     [k in K]: V
   }
 }
-interface IEnum<K extends string = string, V = number> extends IEnumBase<
-  'enum',
-  K,
-  V
-> {}
-interface IFlag<K extends string = string, V = number> extends IEnumBase<
-  'flag',
-  K,
-  V
-> {}
+interface IEnum<K extends string = string, V = number> extends IEnumBase<'enum', K, V> {}
+interface IFlag<K extends string = string, V = number> extends IEnumBase<'flag', K, V> {}
 
 export type IPropertyValue =
   | IBoolean
@@ -158,15 +147,13 @@ type Prettify<T> = {
 } & {}
 
 type FilterPanels<T extends ITemplateDef> = {
-  [K in keyof T as T[K] extends IPanel ? K : never]: T[K] extends IPanel
-    ? T[K]
-    : never
+  [K in keyof T as T[K] extends IPanel ? K : never]: T[K] extends IPanel ? T[K] : never
 }
 
 type FilterProps<T extends ITemplateDef> = {
-  [K in keyof T as T[K] extends IPropertyValue
-    ? K
-    : never]: T[K] extends IPropertyValue ? T[K] : never
+  [K in keyof T as T[K] extends IPropertyValue ? K : never]: T[K] extends IPropertyValue
+    ? T[K]
+    : never
 }
 
 type FlattenPanels<T extends ITemplateDef> =
@@ -174,13 +161,9 @@ type FlattenPanels<T extends ITemplateDef> =
 
 type ConvertType<T extends ITemplateDef> = Prettify<
   {
-    -readonly [K in keyof FilterProps<T>]: ExtractBasic<
-      FilterProps<T>[K]['value']
-    >
+    -readonly [K in keyof FilterProps<T>]: ExtractBasic<FilterProps<T>[K]['value']>
   } & Prettify<{
-    -readonly [K in keyof FlattenPanels<T>]: ExtractBasic<
-      FlattenPanels<T>[K]['value']
-    >
+    -readonly [K in keyof FlattenPanels<T>]: ExtractBasic<FlattenPanels<T>[K]['value']>
   }>
 >
 
@@ -277,10 +260,7 @@ export class PropertiesBag<T extends ITemplateDef, CTX extends AppContext> {
     return val
   }
 
-  #getPropDefs(
-    templ: ITemplateDef,
-    flat_templ: { [k: string]: IPropertyValue } = {},
-  ) {
+  #getPropDefs(templ: ITemplateDef, flat_templ: { [k: string]: IPropertyValue } = {}) {
     for (let k in templ) {
       if (typeof k !== 'string') {
         continue
@@ -373,12 +353,7 @@ export class PropertiesBag<T extends ITemplateDef, CTX extends AppContext> {
       }
 
       if (oldProp !== undefined && oldProp.type !== defProp.type) {
-        console.warn(
-          'Property type mismatch during load:',
-          k,
-          oldProp.type,
-          defProp.type,
-        )
+        console.warn('Property type mismatch during load:', k, oldProp.type, defProp.type)
       }
 
       if (item.type === 'enum' || item.type === 'flag') {
@@ -453,20 +428,14 @@ export class PropertiesBag<T extends ITemplateDef, CTX extends AppContext> {
 
         if (numberItem.uiMin !== undefined) {
           if (!numberCast.uiRange) {
-            numberCast.uiRange = Array.from(numberCast.range) as [
-              number,
-              number,
-            ]
+            numberCast.uiRange = Array.from(numberCast.range) as [number, number]
           }
           numberCast.uiRange[0] = numberItem.uiMin
         }
 
         if (numberItem.uiMax !== undefined) {
           if (!numberCast.uiRange) {
-            numberCast.uiRange = Array.from(numberCast.range) as [
-              number,
-              number,
-            ]
+            numberCast.uiRange = Array.from(numberCast.range) as [number, number]
           }
           numberCast.uiRange[1] = numberItem.uiMax
         }
@@ -664,8 +633,7 @@ export class PropsEditor<
       return
     }
 
-    let key =
-      '' + props._updateGen + ':' + props._id + ':' + props._props.length
+    let key = '' + props._updateGen + ':' + props._id + ':' + props._props.length
 
     if (key !== this._last_update_key) {
       this._last_update_key = key

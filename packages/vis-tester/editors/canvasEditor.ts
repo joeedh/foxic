@@ -4,6 +4,8 @@ import {
   loadUIData,
   nstructjs,
   saveUIData,
+  TabContainer,
+  TabItemContainer,
   UIBase,
   util,
   Vector2,
@@ -19,14 +21,34 @@ import { MeshToolMode } from '../toolmode/toolmode_mesh'
 const getlocaltemps = util.cachering.fromConstructor(Vector2, 512)
 const getglobaltemps = util.cachering.fromConstructor(Vector2, 512)
 
+class ToolModeUIState {
+  static STRUCT = nstructjs.inlineRegister(
+    this,
+    `
+    ToolModeUIState {
+      toolModeType : string;
+      toolTabState : string;
+    }
+    `,
+  )
+  toolModeType: string
+  toolTabState: string
+
+  constructor(toolModeType?: string, toolTabState?: string) {
+    this.toolModeType = toolModeType ?? ''
+    this.toolTabState = toolTabState ?? ''
+  }
+}
+
 export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CTX> {
   static STRUCT = nstructjs.inlineRegister(
     this,
     `
     CanvasEditor {
-      _toolmode_i     :   int | this.toolmodes.indexOf(this.toolmode);
-      toolmodes       :   array(abstract(ToolMode));
-      selectMask      :   int;
+      _toolmode_i       :   int | this.toolmodes.indexOf(this.toolmode);
+      toolmodes         :   array(abstract(ToolMode));
+      selectMask        :   int;
+      _toolModeUIStates :   iterkeys(ToolModeUIState) | Object.fromEntries(Array.from(this._toolModeUIStates.entries()));
     }
     `,
   )
@@ -50,11 +72,19 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
 
   lastLocalMouse = new Vector2()
   private firstLastMouse = true
+  _toolModeUIStates = new Map<ToolMode<CTX>, ToolModeUIState>()
 
   canvas: HTMLCanvasElement
   toolmode?: ToolMode<CTX>
   toolmodes: ToolMode<CTX>[] = []
-  sidebar?: EditorSideBar<CTX>
+  sidebar?: {
+    sidebar: EditorSideBar<CTX>
+    tabs: TabContainer<CTX>
+    propsTab: TabItemContainer<CTX>
+    propsTabExtra: Container<CTX>
+    toolTab: TabItemContainer<CTX>
+  }
+
   private needsSidebarRebuild = false
 
   private redrawCB = () => this.draw()
@@ -119,6 +149,16 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
   }
 
   switchToolMode<T extends ToolMode<CTX>>(cls: IToolModeConstructor<T>): T {
+    if (this.toolmode !== undefined && this.sidebar !== undefined) {
+      this._toolModeUIStates.set(
+        this.toolmode,
+        new ToolModeUIState(
+          this.toolmode.toolModeDef.typeName,
+          saveUIData(this.sidebar.toolTab, 'toolmode toolsTab'),
+        ),
+      )
+    }
+
     let toolmode = this.toolmodes.find((t) => t.constructor === undefined) as
       | T
       | undefined
@@ -134,6 +174,8 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
     this.toolmode = toolmode
     this.toolmode.ctx = this.ctx
     this.toolmode.onActive()
+
+    redrawAll()
     return toolmode as T
   }
 
@@ -141,7 +183,8 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
     super.init()
 
     this.checkRedrawEvent()
-    redrawAll()
+    // forcably draw syncronously on initialization
+    this.redrawCB()
 
     if (this.toolmode === undefined) {
       this.toolmode = this.switchToolMode(ToolModeClasses[0])
@@ -158,38 +201,58 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
     //save transient ui state (e.g. panel collapse state, active tabs, etc
     let uidata: string | undefined
     if (this.sidebar !== undefined) {
-      uidata = saveUIData(this, 'editor sidebar')
-      this.sidebar.remove()
+      uidata = saveUIData(this.sidebar.sidebar, 'editor sidebar')
+    } else {
+      const sidebar = UIBase.createElement(
+        EditorSideBar.define().tagname,
+      ) as EditorSideBar<CTX>
+      const tabs = sidebar.tabs('right')
+      const propsTab = tabs.tab('Properties')
+
+      // create settings editor
+      const props = UIBase.createElement(PropsEditor.define().tagname) as PropsEditor<
+        CTX['_settings']['sourceTemplate'],
+        CTX
+      >
+      props.setAttribute('datapath', '_settings')
+      propsTab.add(props)
+
+      this.sidebar = {
+        sidebar,
+        tabs,
+        propsTab,
+        propsTabExtra: propsTab.col(),
+        toolTab      : tabs.tab('Tool'),
+      }
+      this.shadow.appendChild(sidebar)
     }
 
-    const sidebar = UIBase.createElement(
-      EditorSideBar.define().tagname,
-    ) as EditorSideBar<CTX>
+    const { toolTab, propsTab } = this.sidebar!
 
-    this.sidebar = sidebar
-    this.shadow.appendChild(sidebar)
-
-    const tabs = this.sidebar.tabs('right')
-    let tab = tabs.tab('Properties')
-
-    const props = UIBase.createElement(PropsEditor.define().tagname) as PropsEditor<
-      CTX['_settings']['sourceTemplate'],
-      CTX
-    >
-    props.setAttribute('datapath', '_settings')
-    tab.add(props)
-
-    tab = tabs.tab('Tool')
+    toolTab.clear()
     const toolmode = this.toolmode
     if (toolmode?.buildSideBar) {
-      toolmode.buildSideBar(tab)
+      toolmode.buildSideBar(toolTab, propsTab)
     }
 
     // restore stored transient ui state
     if (uidata !== undefined) {
-      loadUIData(this, uidata)
+      loadUIData(this.sidebar.sidebar, uidata)
     }
-    return { sidebar, tabs }
+    const toolUIState = this.toolmode
+      ? this._toolModeUIStates.get(this.toolmode)
+      : undefined
+    if (toolUIState !== undefined) {
+      loadUIData(toolTab, toolUIState.toolTabState)
+      // delete stored state so we don't reuse it when
+      // e.g. rebuilding the sidebar for some reason other then
+      // switching toolmodes.
+      // it will be saved again on switching to another toolmode.
+      this._toolModeUIStates.delete(this.toolmode!)
+    }
+
+    this.flushUpdate()
+    return this.sidebar!
   }
 
   makeHeader(
@@ -244,6 +307,19 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
     if (i !== -1) {
       this.toolmode = this.toolmodes[i]
     }
+
+    // struct script stored _toolModeUIStates as an array of strings
+    const savedUIState = this._toolModeUIStates as unknown as ToolModeUIState[]
+    this._toolModeUIStates = new Map()
+
+    for (const state of savedUIState) {
+      const toolmode = this.toolmodes.find(
+        (tool) => tool.toolModeDef.typeName === state.toolModeType,
+      )
+      if (toolmode !== undefined) {
+        this._toolModeUIStates.set(toolmode, state)
+      }
+    }
   }
 
   checkSize() {
@@ -264,6 +340,9 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
   }
 
   draw() {
+    if (this.toolmode !== undefined) {
+      this.toolmode.ctx = this.ctx
+    }
     this.checkSize()
 
     console.log('draw!')

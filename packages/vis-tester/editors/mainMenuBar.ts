@@ -12,20 +12,18 @@ import { Editor } from '.'
 import { AppContext } from '../core/context'
 import { Icons } from '../assets/icon_enum'
 
-export class MainMenuBar<
-  CTX extends AppContext = AppContext,
-> extends Editor<CTX> {
+export class MainMenuBar<CTX extends AppContext = AppContext> extends Editor<CTX> {
   static STRUCT = nstructjs.inlineRegister(this, `MainMenuBar {}`)
 
   static define() {
     super.define
     return {
-      tagname: 'main-menu-x',
-      areaname: 'MainMenuBar',
-      uiname: 'Main Menu',
-      icon: -1,
+      tagname   : 'main-menu-x',
+      areaname  : 'MainMenuBar',
+      uiname    : 'Main Menu',
+      icon      : -1,
       borderLock: 1,
-      flag: AreaFlags.HIDDEN | AreaFlags.NO_SWITCHER,
+      flag      : AreaFlags.HIDDEN | AreaFlags.NO_SWITCHER,
     }
   }
 

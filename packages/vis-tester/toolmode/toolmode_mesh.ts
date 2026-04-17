@@ -1,8 +1,32 @@
-import { color2css, nstructjs, Vector4, math, Vector2Like, Vector3, eventWasMouseDown } from 'path.ux'
+import {
+  color2css,
+  nstructjs,
+  Vector4,
+  math,
+  Vector2Like,
+  Vector3,
+  eventWasMouseDown,
+  Vector2,
+} from 'path.ux'
 import { ToolMode } from './toolmode'
 import { Icons } from '../assets/icon_enum'
 import type { AppContext } from '../core/context'
-import { getElemColor, Mesh, MeshCtx, Element, MeshTypes, SelectOneOp, SelToolModes } from '@gametest/meshlib'
+import {
+  getElemColor,
+  Mesh,
+  MeshCtx,
+  Element,
+  MeshTypes,
+  SelectOneOp,
+  SelToolModes,
+  TranslateOp,
+  meshRedrawEmitter,
+} from '@gametest/meshlib'
+import { redrawAll } from '../editors/redraw'
+
+meshRedrawEmitter.on('redraw', () => {
+  redrawAll()
+})
 
 export abstract class MeshToolMode<
   CTX extends AppContext & MeshCtx,
@@ -25,10 +49,14 @@ export abstract class MeshToolMode<
 
   abstract get mesh(): Mesh | undefined
   selectMask = MeshTypes.VERTEX
+  mouseDown = false
+  startMouseDown = new Vector2()
 
   findElement(selectMask: number, localMouse2d: Vector2Like, limit?: number) {
     const mesh = this.mesh
-    return mesh ? MeshToolMode.findElement(mesh, selectMask, localMouse2d, limit) : undefined
+    return mesh
+      ? MeshToolMode.findElement(mesh, selectMask, localMouse2d, limit)
+      : undefined
   }
 
   static findElement(mesh: Mesh, type: number, localMouse2d: Vector2Like, limit = 50) {
@@ -85,18 +113,21 @@ export abstract class MeshToolMode<
       return
     }
 
-    console.log('pointerdown')
     const elem = this.updateHighlight(this.ctx.canvas.getLocalMouse(e.x, e.y))
-    console.log(elem)
+    this.mouseDown = eventWasMouseDown(e)
+    if (this.mouseDown) {
+      this.startMouseDown.load(this.ctx.canvas.getLocalMouse(e.x, e.y))
+    }
+
     if (elem) {
       const tool = new SelectOneOp<CTX>()
       this.ctx!.api.execTool(this.ctx!, tool, {
-        mode: SelToolModes.ADD,
-        elemEid: elem.eid,
-        flush: true,
+        mode      : SelToolModes.ADD,
+        elemEid   : elem.eid,
+        flush     : true,
         selectMask: this.selectMask,
-        setActive: true,
-        unique: !(e.shiftKey || e.ctrlKey || e.metaKey),
+        setActive : true,
+        unique    : !(e.shiftKey || e.ctrlKey || e.metaKey),
       })
     }
   }
@@ -107,7 +138,20 @@ export abstract class MeshToolMode<
     }
 
     const mpos = canvas.getLocalMouse(e.x, e.y)
-    this.updateHighlight(mpos)
+    if (!this.mouseDown) {
+      this.updateHighlight(mpos)
+    } else if (this.startMouseDown.vectorDistance(mpos) > 5) {
+      console.log('drag!')
+      const tool = new TranslateOp<CTX>()
+
+      this.mouseDown = false
+      this.ctx!.api.execTool(this.ctx!, tool, {
+        startMouse: this.startMouseDown,
+      })
+    }
+  }
+  onPointerUp(e: PointerEvent) {
+    this.mouseDown = false
   }
   draw(ctx: CTX, canvas: HTMLCanvasElement, g: CanvasRenderingContext2D) {
     super.draw(ctx, canvas, g)

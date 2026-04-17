@@ -12,15 +12,7 @@ import {
   PropertySlots,
   ToolDef,
 } from 'path.ux'
-import {
-  Vertex,
-  MeshVector,
-  Element,
-  Mesh,
-  ElementArray,
-  Handle,
-  meshRedrawEmitter,
-} from './mesh'
+import { Vertex, MeshVector, Element, Mesh, ElementArray, Handle } from './mesh'
 import { MeshTypes, MeshFlags } from './mesh_base'
 import type { MeshCtx } from './mesh_ops'
 
@@ -187,12 +179,13 @@ TransformElem.register(TransformVert)
 type TransformData = TransformList[]
 
 export class TransformOp<
+  CTX extends MeshCtx,
   Inputs extends PropertySlots = {},
   Outputs extends PropertySlots = {},
 > extends ToolOp<
-  Inputs & { selMask: FlagProperty; center: VecProperty },
+  Inputs & { selMask: FlagProperty; center: VecProperty; startMouse: Vec2Property },
   Outputs,
-  MeshCtx
+  CTX
 > {
   transData?: TransformData
   deltaMpos: Vector2
@@ -242,7 +235,7 @@ export class TransformOp<
     this.inputs.center.setValue(min.interp(max, 0.5))
   }
 
-  getTransData(ctx: MeshCtx, doCenter = true) {
+  getTransData(ctx: CTX, doCenter = true) {
     if (this.transData) {
       if (doCenter) {
         this.calcTransCenter(this.transData)
@@ -267,23 +260,29 @@ export class TransformOp<
     return ret
   }
 
-  execPost(ctx: MeshCtx) {
+  execPost(ctx: CTX) {
     this.transData = undefined
-    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
+    ctx.mesh.regenRender()
   }
 
-  execPre(ctx: MeshCtx) {
+  execPre(ctx: CTX) {
     this.getTransData(ctx)
-    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
+    ctx.mesh.regenRender()
   }
 
-  modalStart(ctx: MeshCtx) {
+  modalStart(ctx: CTX) {
     const promise = super.modalStart(ctx)
+    if (this.inputs.startMouse.wasSet) {
+      this.startMpos.load(this.inputs.startMouse.getValue())
+      this.lastMpos.load(this.startMpos)
+      this.first = false
+    }
     this.getTransData(ctx)
+
     return promise
   }
 
-  undoPre(ctx: MeshCtx) {
+  undoPre(ctx: CTX) {
     this._undo = {}
     this._undoSelMask = this.inputs.selMask.getValue()
 
@@ -298,17 +297,17 @@ export class TransformOp<
       this._undo[list.typeName] = cls.undoPre(ctx.mesh, selMask, list)
     }
 
-    meshRedrawEmitter.emitEvent('redraw', mesh)
+    mesh.regenRender()
   }
 
-  undo(ctx: MeshCtx) {
+  undo(ctx: CTX) {
     let mesh = ctx.mesh
 
     for (let k in this._undo) {
       TransformElem.getClass(k)!.undo(mesh, this._undoSelMask!, this._undo[k])
     }
 
-    meshRedrawEmitter.emitEvent('redraw', mesh)
+    mesh.regenRender()
   }
 
   on_pointerup(e: PointerEvent) {
@@ -360,9 +359,10 @@ export class TransformOp<
 }
 
 export class TranslateOp<
+  CTX extends MeshCtx,
   Inputs extends PropertySlots = {},
   Outputs extends PropertySlots = {},
-> extends TransformOp<Inputs & { offset: VecProperty }, Outputs> {
+> extends TransformOp<CTX, Inputs & { offset: VecProperty }, Outputs> {
   constructor() {
     super()
   }
@@ -372,7 +372,8 @@ export class TranslateOp<
       uiname  : 'Move',
       toolpath: 'transform.translate',
       inputs: ToolOp.inherit({
-        offset: new VecProperty(),
+        offset    : new VecProperty(),
+        startMouse: new Vec2Property(),
       }),
       is_modal: true,
     }
@@ -388,7 +389,7 @@ export class TranslateOp<
     this.exec(this.modal_ctx!)
   }
 
-  exec(ctx: MeshCtx) {
+  exec(ctx: CTX) {
     let delta = this.inputs.offset.getValue()
 
     let matrix = new Matrix4()
@@ -404,13 +405,16 @@ export class TranslateOp<
       }
     }
 
-    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
+    ctx.mesh.regenRender()
   }
 }
 
 ToolOp.register(TranslateOp)
 
-export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
+export class ScaleOp<CTX extends MeshCtx> extends TransformOp<
+  CTX,
+  { scale: VecProperty }
+> {
   constructor() {
     super()
   }
@@ -460,7 +464,7 @@ export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
     this.exec(this.modal_ctx!)
   }
 
-  exec(ctx: MeshCtx) {
+  exec(ctx: CTX) {
     let scale = this.inputs.scale.getValue()
     let center = this.inputs.center.getValue()
 
@@ -484,13 +488,16 @@ export class ScaleOp extends TransformOp<{ scale: VecProperty }> {
       }
     }
 
-    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
+    ctx.mesh.regenRender()
   }
 }
 
 ToolOp.register(ScaleOp)
 
-export class RotateOp extends TransformOp<{ th: FloatProperty }> {
+export class RotateOp<CTX extends MeshCtx> extends TransformOp<
+  CTX,
+  { th: FloatProperty }
+> {
   constructor() {
     super()
   }
@@ -535,7 +542,7 @@ export class RotateOp extends TransformOp<{ th: FloatProperty }> {
     this.lastMpos.load(this.mpos)
   }
 
-  exec(ctx: MeshCtx) {
+  exec(ctx: CTX) {
     let { center, th } = this.getInputs()
 
     let tmat1 = new Matrix4()
@@ -559,7 +566,7 @@ export class RotateOp extends TransformOp<{ th: FloatProperty }> {
         td.apply(matrix)
       }
     }
-    meshRedrawEmitter.emitEvent('redraw', ctx.mesh)
+    ctx.mesh.regenRender()
   }
 }
 

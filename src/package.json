@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "node node_modules/@gametest/esbuild-serve/serv.js serv",
     "build": "",
-    "format": "npx @pathtx/prettier --write ./ index.html",
+    "format": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --write ./ ../public/index.html",
+    "format:check": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --check ./ ../public/index.html",
     "playwright": "npx playwright test",
     "typecheck": "npx tsgo --noEmit"
   },

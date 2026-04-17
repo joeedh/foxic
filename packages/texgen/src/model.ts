@@ -21,12 +21,13 @@ export class TexGenFile {
   constructor() {
     this.mesh = new Mesh()
     const mesh = this.mesh
-    const d1 = 100, d2 = 300
-    const vs =[
-        mesh.makeVertex(new Vector3().loadXYZ(d1, d1, 0.0)),
-        mesh.makeVertex(new Vector3().loadXYZ(d1, d2, 0.0)),
-        mesh.makeVertex(new Vector3().loadXYZ(d2, d2, 0.0)),
-        mesh.makeVertex(new Vector3().loadXYZ(d2, d1, 0.0)),
+    const d1 = 100,
+      d2 = 300
+    const vs = [
+      mesh.makeVertex(new Vector3().loadXYZ(d1, d1, 0.0)),
+      mesh.makeVertex(new Vector3().loadXYZ(d1, d2, 0.0)),
+      mesh.makeVertex(new Vector3().loadXYZ(d2, d2, 0.0)),
+      mesh.makeVertex(new Vector3().loadXYZ(d2, d1, 0.0)),
     ]
     mesh.makeFace(vs)
   }

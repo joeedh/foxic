@@ -1,11 +1,4 @@
-import {
-  Area,
-  Container,
-  IconButton,
-  PackFlags,
-  TabContainer,
-  UIBase,
-} from 'path.ux'
+import { Area, Container, IconButton, PackFlags, TabContainer, UIBase } from 'path.ux'
 import type { AppContext } from '../core/context'
 import { registerDataClass } from '../core/register'
 import { Icons } from '../assets/icon_enum'
@@ -69,7 +62,7 @@ export class EditorSideBar<CTX extends AppContext> extends Container<CTX> {
   static define() {
     return {
       tagname: 'editor-sidebar-x',
-      style: 'sidebar',
+      style  : 'sidebar',
     }
   }
 
@@ -153,9 +146,9 @@ export class EditorSideBar<CTX extends AppContext> extends Container<CTX> {
     this.style['width'] = '' + this._width + 'px'
     if (this.editor?.size) {
       this.style.left = this.editor.size[0] - this._width + 'px'
+      const h = this.editor.container?.getBoundingClientRect()?.height ?? 0
+      this.style.top = h + 'px'
     }
-    console.log(this.style.left)
-
     this.background = this.getDefault('background-color') as string
   }
 
@@ -193,9 +186,7 @@ export class Editor<CTX extends AppContext> extends Area<CTX> {
 
   init(): void {
     super.init()
-    this.container = UIBase.createElement(
-      Container.define().tagname,
-    ) as Container<CTX>
+    this.container = UIBase.createElement(Container.define().tagname) as Container<CTX>
     this.shadow.appendChild(this.container)
     this.container.ctx = this.ctx
     this.container._init()

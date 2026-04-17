@@ -1,21 +1,26 @@
 {
-    "name": "@gametest/texgen",
-    "scripts": {
-        "typecheck": "npx tsgo --noEmit",
-        "serv": "node serv.js"
-    },
-    "devDependencies": {
-        "esbuild": "^0.28.0",
-        "path.ux": "workspace:*",
-        "@gametest/vis-tester-base": "workspace:*",
-        "@gametest/webgl": "workspace:*",
-        "@gametest/utils": "workspace:*",
-        "@gametest/math": "workspace:*",
-        "@gametest/meshlib": "workspace:*",
-        "@gametest/tsconfig": "workspace:*"
-    },
-    "dependencies": {
-        "@typescript/native-preview": "7.0.0-dev.20260414.1",
-        "typescript": "^6.0.2"
-    }
+  "name": "@gametest/texgen",
+  "scripts": {
+    "typecheck": "npx tsgo --noEmit",
+    "format": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --write .",
+    "format:check": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --check .",
+    "dev": "node node_modules/@gametest/esbuild-serve/serv.js serv"
+  },
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "@pathtx/prettier": "3.3.0-dev",
+    "path.ux": "workspace:*",
+    "@gametest/vis-tester-base": "workspace:*",
+    "@gametest/webgl": "workspace:*",
+    "@gametest/utils": "workspace:*",
+    "@gametest/math": "workspace:*",
+    "@gametest/meshlib": "workspace:*",
+    "@gametest/tsconfig": "workspace:*",
+    "@gametest/esbuild-serve": "workspace:*"
+  },
+  "dependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260414.1",
+    "typescript": "^6.0.2"
+  }
 }

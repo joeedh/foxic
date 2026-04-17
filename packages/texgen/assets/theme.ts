@@ -4,7 +4,7 @@
  * Copy to scripts/editors/theme.js
  */
 
-import {CSSFont, ThemeScrollBars} from 'path.ux'
+import { CSSFont, ThemeScrollBars } from 'path.ux'
 
 export const theme = {
   base: {

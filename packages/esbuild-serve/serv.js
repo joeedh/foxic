@@ -16,11 +16,13 @@ const options = yargs(hideBin(process.argv))
         typeof options.input === 'string' ? [options.input] : options.input
       const outDir = options.outdir
       const port = options.port
-
+      const servedir = options.servedir ?? options.outdir
+      
       startEsbuildServer({
         entryFiles,
         outDir,
         port,
+        servedir
       })
     },
   )
@@ -35,6 +37,13 @@ const options = yargs(hideBin(process.argv))
     type        : 'string',
     demandOption: false,
     describe    : 'Output directory',
+    single      : true,
+  })
+  .option('servedir', {
+    alias       : 'o',
+    type        : 'string',
+    demandOption: false,
+    describe    : 'Serv base directory, defaults to outdir',
     single      : true,
   })
   .option('config', {
@@ -68,8 +77,12 @@ await esbuild.build({
   metafile: true,
 })
 */
-async function startEsbuildServer({ entryFiles, outDir, port, configPath }) {
+async function startEsbuildServer({ entryFiles, outDir, port, configPath, servedir }) {
   configPath = configPath ?? '.esbuild-server.js'
+
+  if (typeof port === 'string') {
+    port = parseInt(port)
+  }
 
   let options = {
     entryPoints: entryFiles,
@@ -86,10 +99,18 @@ async function startEsbuildServer({ entryFiles, outDir, port, configPath }) {
   if (fs.existsSync(configPath)) {
     const config = await import(pathToFileURL(Path.resolve(configPath)))
     options = { ...options, ...config.default }
+    if (config.default.port) {
+      port = config.default.port
+      delete options.port
+    }
+    if (config.default.servedir) {
+      servedir = config.default.servedir
+      delete options.servedir
+    }
   }
 
   const ctx = await esbuild.context(options)
 
   console.log('Serving at', `http://localhost:${port}`)
-  await ctx.serve({ port: parseInt(port), servedir: Path.resolve('../public') })
+  await ctx.serve({ port, servedir })
 }

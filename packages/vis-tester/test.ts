@@ -28,8 +28,8 @@ const MySettingsTemplate = {
   prop1: { type: 'string', value: 'string!' },
   prop2: { type: 'float', value: 1.0 },
   panel: {
-    type: 'panel',
-    panel: 'Panel!',
+    type    : 'panel',
+    panel   : 'Panel!',
     children: {
       prop3: { type: 'bool', value: false },
     },
@@ -40,11 +40,7 @@ class MyContext extends AppContext<MyModel, typeof MySettingsTemplate> {
   //
 }
 
-export class AppTest extends AppState<
-  typeof MySettingsTemplate,
-  MyModel,
-  MyContext
-> {
+export class AppTest extends AppState<typeof MySettingsTemplate, MyModel, MyContext> {
   readonly localStorageKey = 'TEST1'
   readonly version = [0, 0, 1] as const
   readonly saveStartupOnSettingsChange = true

@@ -1,10 +1,10 @@
 export const MeshTypes = {
-  VERTEX: 1,
-  EDGE: 2,
-  HANDLE: 4,
-  LOOP: 8,
+  VERTEX  : 1,
+  EDGE    : 2,
+  HANDLE  : 4,
+  LOOP    : 8,
   LOOPLIST: 16,
-  FACE: 32,
+  FACE    : 32,
 } as const
 
 export type MeshTypes = (typeof MeshTypes)[keyof typeof MeshTypes]

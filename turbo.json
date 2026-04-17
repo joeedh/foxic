@@ -1,0 +1,28 @@
+{
+    "$schema": "https://turborepo.dev/schema.json",
+    "ui": "stream",
+    "tasks": {
+        "build": {
+            "cache": true,
+            "dependsOn": [
+                "^build"
+            ]
+        },
+        "format": {
+            "cache": true,
+            "dependsOn": [
+                "^format"
+            ],
+            "inputs": [
+                "./**.ts",
+                "$TURBO_DEFAULT$"
+            ]
+        },
+        "check-types": {
+            "cache": true,
+            "dependsOn": [
+                "^check-types"
+            ]
+        }
+    }
+}

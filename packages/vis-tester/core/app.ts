@@ -32,7 +32,6 @@ export interface IFileOptions {
 class MyFileExport extends FileHeader {
   model?: any
   screen?: any
-  settings?: any
 
   static STRUT = nstructjs.inlineRegister(
     this,
@@ -40,23 +39,18 @@ class MyFileExport extends FileHeader {
     MyFileExport {
       model: optional(abstract(Object));
       screen: optional(abstract(Object));
-      settings: optional(abstract(Object));
     }
     `,
   )
 
-  constructor(
-    settings?: PropertiesBag<any, any>,
-    version?: number[],
-    magic = '',
-    flags = 0,
-  ) {
+  constructor(version?: number[], magic = '', flags = 0) {
     super(version, magic, flags)
-    this.settings = settings
   }
 }
 export abstract class AppState<
-  SETTINGS extends ITemplateDef = {},
+  SETTINGS extends
+    | ITemplateDef
+    | (ITemplateDef & { autoSave: { type: 'bool'; value: boolean } }) = {},
   DataModelRoot = unknown,
   CTX extends AppContext = AppContext,
 > {
@@ -89,7 +83,7 @@ export abstract class AppState<
     this.settings.onChange = () => {
       this.ctx.redrawAll()
       if (this.saveStartupOnSettingsChange) {
-        this.saveLocalStorage()
+        this.saveSettings()
       }
     }
   }
@@ -113,7 +107,7 @@ export abstract class AppState<
   }
 
   save(args: IFileOptions = {}) {
-    const file = new MyFileExport(this.settings, Array.from(this.version), 'VIST')
+    const file = new MyFileExport(Array.from(this.version), 'VIST')
 
     if (args.screen) file.screen = this.screen
     file.model = this.model
@@ -155,7 +149,6 @@ export abstract class AppState<
       this.screen.remove()
     }
 
-    this.settings = file.settings ?? this.settings
     this.onSettingsLoad()
     this.model = file.model
     this.screen = file.screen
@@ -169,6 +162,30 @@ export abstract class AppState<
     this.screen.listen()
     for (let i = 0; i < 3; i++) {
       this.screen.completeUpdate()
+    }
+  }
+
+  saveSettings() {
+    const key = this.localStorageKey + '_settings'
+    const settings = nstructjs.writeJSON(this.settings)
+    localStorage[key] = JSON.stringify(settings)
+  }
+
+  loadSettings() {
+    const key = this.localStorageKey + '_settings'
+    if (!(key in localStorage)) return
+    try {
+      const settings = JSON.parse(localStorage[key])
+      this.settings = nstructjs.readJSON(settings, PropertiesBag) as PropertiesBag<
+        SETTINGS,
+        CTX
+      >
+      this.onSettingsLoad()
+    } catch (err: any) {
+      this.settings = new PropertiesBag<SETTINGS, CTX>(this.settingsTemplate)
+      this.onSettingsLoad()
+      console.error(err.stack)
+      console.error('Failed to load settings from localStorage')
     }
   }
 
@@ -272,6 +289,8 @@ export abstract class AppState<
     )
     setIconManager(iconManager, this.getIconEnum())
 
+    this.loadSettings()
+
     if (!this.loadLocalStorage()) {
       this.createDefaultFile()
       document.body.appendChild(this.screen)
@@ -279,5 +298,14 @@ export abstract class AppState<
       this.screen.listen()
       this.screen.completeUpdate()
     }
+
+    window.setInterval(() => {
+      if (
+        'autoSave' in _appstate.settings.boundProps &&
+        _appstate.settings.boundProps.autoSave
+      ) {
+        this.saveLocalStorage()
+      }
+    }, 500)
   }
 }

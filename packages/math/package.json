@@ -1,15 +1,18 @@
 {
-    "name": "@gametest/math",
-    "scripts": {
-        "typecheck": "npx tsgo --noEmit"
-    },
-    "devDependencies": {
-        "path.ux": "workspace:*",
-        "@gametest/utils": "workspace:*",
-        "@gametest/tsconfig": "workspace:*"
-    },
-    "dependencies": {
-        "@typescript/native-preview": "7.0.0-dev.20260414.1",
-        "typescript": "^6.0.2"
-    }
+  "name": "@gametest/math",
+  "scripts": {
+    "typecheck": "npx tsgo --noEmit",
+    "format": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --write .",
+    "format:check": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --check ."
+  },
+  "devDependencies": {
+    "@pathtx/prettier": "3.3.0-dev",
+    "path.ux": "workspace:*",
+    "@gametest/utils": "workspace:*",
+    "@gametest/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260414.1",
+    "typescript": "^6.0.2"
+  }
 }

@@ -13,14 +13,14 @@ AppScreen {
   constructor() {
     super()
   }
-  
+
   init() {
     super.init()
   }
 
   static define() {
     return {
-        tagname: 'tester-vis-app'
+      tagname: 'tester-vis-app',
     }
   }
 }

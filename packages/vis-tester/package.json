@@ -1,19 +1,22 @@
 {
-    "name": "@gametest/vis-tester-base",
-    "scripts": {
-        "typecheck": "npx tsgo --noEmit",
-        "serv": "node serv.mjs"
-    },
-    "devDependencies": {
-        "esbuild": "^0.28.0",
-        "path.ux": "workspace:*",
-        "@gametest/meshlib": "workspace:*",
-        "@gametest/utils": "workspace:*",
-        "@gametest/math": "workspace:*",
-        "@gametest/tsconfig": "workspace:*"
-    },
-    "dependencies": {
-        "@typescript/native-preview": "7.0.0-dev.20260414.1",
-        "typescript": "^6.0.2"
-    }
+  "name": "@gametest/vis-tester-base",
+  "scripts": {
+    "typecheck": "npx tsgo --noEmit",
+    "format": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --write .",
+    "format:check": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --check .",
+    "serv": "node serv.mjs"
+  },
+  "devDependencies": {
+    "@pathtx/prettier": "3.3.0-dev",
+    "esbuild": "^0.28.0",
+    "path.ux": "workspace:*",
+    "@gametest/meshlib": "workspace:*",
+    "@gametest/utils": "workspace:*",
+    "@gametest/math": "workspace:*",
+    "@gametest/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@typescript/native-preview": "7.0.0-dev.20260414.1",
+    "typescript": "^6.0.2"
+  }
 }
