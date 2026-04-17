@@ -2,7 +2,7 @@
   "name": "gametest",
   "type": "module",
   "scripts": {
-    "dev": "npx vite",
+    "dev": "npx @gametest/esbuild-serve serv",
     "build": "",
     "format": "npx @pathtx/prettier --write ./ index.html",
     "playwright": "npx playwright test",
@@ -16,8 +16,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260414.1",
     "@gametest/esbuild-serve": "workspace:*",
     "mcp-image": "^0.10.0",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.8"
+    "typescript": "^6.0.2"
   },
   "packageManager": "pnpm@10.30.3"
 }

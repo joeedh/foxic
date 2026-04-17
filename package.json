@@ -2,10 +2,9 @@
   "name": "gametest",
   "type": "module",
   "scripts": {
-    "dev": "cd src; npx vite",
-    "build": "npx tsgo && vite build",
-    "preview": "cd src; vite preview",
-    "format": "prettier --write src/ index.html",
+    "dev": "cd src && pnpm dev",
+    "build": "npx tsgo",
+    "format": "npx \"@pathtx/prettier\" --write src/",
     "playwright": "npx playwright test",
     "typecheck": "npx tsgo --noEmit"
   },
@@ -14,7 +13,6 @@
     "@playwright/test": "^1.59.1",
     "@typescript/native-preview": "7.0.0-dev.20260414.1",
     "mcp-image": "^0.10.0",
-    "prettier": "^3.8.1",
     "typescript": "^6.0.2"
   },
   "packageManager": "pnpm@10.30.3",
