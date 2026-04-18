@@ -16,6 +16,7 @@ AppScreen {
 
   init() {
     super.init()
+    this.playwrightId('tester-vis-app')
   }
 
   static define() {

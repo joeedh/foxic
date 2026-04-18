@@ -4,7 +4,7 @@ import { Icons } from '../assets/icon_enum'
 import { Container, loadFile, nstructjs } from 'path.ux'
 import type { TexGenContext } from './context'
 
-//@ts-expect-error - Type instantiation is excessively deep and possibly infinite.
+// @ts-ignore — Type instantiation is excessively deep and possibly infinite.
 export class MeshTool extends MeshToolMode<TexGenContext> {
   image?: HTMLImageElement
 

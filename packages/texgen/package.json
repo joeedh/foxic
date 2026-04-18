@@ -4,10 +4,12 @@
     "typecheck": "npx tsgo --noEmit",
     "format": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --write .",
     "format:check": "node node_modules/@pathtx/prettier/bin/prettier.cjs --log-level warn --cache --check .",
-    "dev": "node node_modules/@gametest/esbuild-serve/serv.js serv"
+    "dev": "node node_modules/@gametest/esbuild-serve/serv.js serv",
+    "playwright": "npx playwright test"
   },
   "type": "module",
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "esbuild": "^0.28.0",
     "@pathtx/prettier": "3.3.0-dev",
     "path.ux": "workspace:*",

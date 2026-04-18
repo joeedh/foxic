@@ -7,7 +7,7 @@ export const MeshTypes = {
   FACE    : 32,
 } as const
 
-export type MeshTypes = (typeof MeshTypes)[keyof typeof MeshTypes]
+export type MeshTypes = number
 
 export enum MeshFlags {
   NONE = 0,

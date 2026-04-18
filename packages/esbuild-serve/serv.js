@@ -17,12 +17,12 @@ const options = yargs(hideBin(process.argv))
       const outDir = options.outdir
       const port = options.port
       const servedir = options.servedir ?? options.outdir
-      
+
       startEsbuildServer({
         entryFiles,
         outDir,
         port,
-        servedir
+        servedir,
       })
     },
   )
@@ -55,7 +55,7 @@ const options = yargs(hideBin(process.argv))
   })
   .option('port', {
     alias       : 'p',
-    default     : 5723,
+    default     : '',
     type        : 'string',
     demandOption: false,
     single      : true,
@@ -80,7 +80,7 @@ await esbuild.build({
 async function startEsbuildServer({ entryFiles, outDir, port, configPath, servedir }) {
   configPath = configPath ?? '.esbuild-server.js'
 
-  if (typeof port === 'string') {
+  if (typeof port === 'string' && port.length > 0) {
     port = parseInt(port)
   }
 
@@ -99,9 +99,15 @@ async function startEsbuildServer({ entryFiles, outDir, port, configPath, served
   if (fs.existsSync(configPath)) {
     const config = await import(pathToFileURL(Path.resolve(configPath)))
     options = { ...options, ...config.default }
-    if (config.default.port) {
+    if (config.default.port && !port) {
       port = config.default.port
-      delete options.port
+    }
+    // esbuild does not like port in it's context options, delete it
+    delete options.port
+
+    if (!port) {
+      process.stderr.write('Port is required\n')
+      process.exit(1)
     }
     if (config.default.servedir) {
       servedir = config.default.servedir
