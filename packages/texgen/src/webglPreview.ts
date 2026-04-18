@@ -128,7 +128,13 @@ export class WebGLPreviewEditor extends Editor<TexGenContext> {
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     if (this.shader && this.ctx.sdfTexture) {
-      this.shader.bind(gl, { u_sdf: this.ctx.sdfTexture })
+      try {
+        this.shader.bind(gl, { u_sdf: this.ctx.sdfTexture })
+      } catch (error: any) {
+        console.error(error.stack)
+        console.error(error.message)
+        return
+      }
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
   }

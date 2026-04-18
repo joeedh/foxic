@@ -27,10 +27,13 @@ import { duplicate, vertexSmooth } from './mesh_utils'
 import { TranslateOp } from './transform_ops'
 import { IContextBase } from 'path.ux/scripts/core/context_base'
 
-export let SelToolModes = {
+export const SelToolModes = {
   ADD : 0,
   SUB : 1,
+  /** auto, may also mean unique. */
   AUTO: 2,
+  /** toggle selection */
+  TOGGLE: 3,
 }
 
 function saveUndoMesh(mesh: Mesh) {
@@ -73,11 +76,7 @@ export class MeshOp<
 > extends ToolOp<Inputs, Outputs, CTX> {
   private _meshUndoBuf?: DataView
 
-  static canRun<CTX extends ContextLike>(
-    _ctx: CTX,
-    _toolop?: ToolOp | undefined,
-  ): boolean {
-    const ctx = _ctx as unknown as MeshCtx
+  static canRun(ctx: MeshCtx, toolop?: ToolOp | undefined): boolean {
     return ctx.mesh !== undefined
   }
 
@@ -140,23 +139,23 @@ ToolOp.register(DissolveVertOp)
 
 export class DeleteOp<CTX extends MeshCtx> extends MeshOp<
   CTX,
-  { selMask: FlagProperty }
+  { selectMask: FlagProperty }
 > {
   static tooldef() {
     return {
       uiname  : 'Delete',
       toolpath: 'mesh.delete',
       inputs: {
-        selMask: new FlagProperty(config.SELECTMASK, MeshTypes),
+        selectMask: new FlagProperty(config.SELECTMASK, MeshTypes),
       },
     }
   }
 
-  static invoke(ctx: any, args: any) {
+  static invoke(ctx: MeshCtx, args: any) {
     let tool = super.invoke(ctx, args)
 
-    if (!('selMask' in args)) {
-      tool.inputs.selMask.setValue(ctx.selMask)
+    if (!('selectMask' in args)) {
+      tool.inputs.selectMask.setValue(ctx.selectMask)
     }
 
     return tool
@@ -164,23 +163,23 @@ export class DeleteOp<CTX extends MeshCtx> extends MeshOp<
 
   exec(ctx: CTX) {
     let mesh = ctx.mesh
-    let { selMask } = this.getInputs()
+    let { selectMask } = this.getInputs()
 
-    console.log('Delete!', selMask)
+    console.log('Delete!', selectMask)
 
-    if (selMask & MeshTypes.FACE) {
+    if (selectMask & MeshTypes.FACE) {
       for (let v of new Set(mesh.faces.selected.editable)) {
         mesh.killFace(v)
       }
     }
 
-    if (selMask & MeshTypes.EDGE) {
+    if (selectMask & MeshTypes.EDGE) {
       for (let v of new Set(mesh.edges.selected.editable)) {
         mesh.killEdge(v)
       }
     }
 
-    if (selMask & MeshTypes.VERTEX) {
+    if (selectMask & MeshTypes.VERTEX) {
       for (let v of new Set(mesh.verts.selected.editable)) {
         mesh.killVertex(v)
       }
@@ -232,6 +231,43 @@ export class ExtrudeVertOp<CTX extends MeshCtx> extends MeshOp<
 }
 
 ToolOp.register(ExtrudeVertOp)
+
+export class MakeEdgeOp<CTX extends MeshCtx> extends MeshOp<
+  CTX,
+  {},
+  { edgeEid: IntProperty }
+> {
+  static tooldef() {
+    return {
+      uiname  : 'Make Edge',
+      toolpath: 'mesh.make_edge',
+      outputs: {
+        edgeEid: new IntProperty(),
+      },
+    }
+  }
+
+  static canRun(ctx: MeshCtx) {
+    const mesh = ctx.mesh
+    if (!mesh) {
+      return false
+    }
+    return mesh.verts.selected.size === 2
+  }
+
+  exec(ctx: CTX) {
+    let mesh = ctx.mesh
+
+    let vs = Array.from(mesh.verts.selected.editable)
+    let v1 = vs[0]
+    let v2 = vs[1]
+
+    let e = mesh.makeEdge(v1, v2)
+
+    this.outputs.edgeEid.setValue(e.eid)
+  }
+}
+ToolOp.register(MakeEdgeOp)
 
 export class MakeFaceOp<CTX extends MeshCtx> extends MeshOp<CTX, { co: Vec3Property }> {
   static tooldef() {

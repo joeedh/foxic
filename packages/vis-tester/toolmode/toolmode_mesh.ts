@@ -7,6 +7,8 @@ import {
   Vector3,
   eventWasMouseDown,
   Vector2,
+  KeyMap,
+  HotKey,
 } from 'path.ux'
 import { ToolMode } from './toolmode'
 import { Icons } from '../assets/icon_enum'
@@ -21,6 +23,7 @@ import {
   SelToolModes,
   TranslateOp,
   meshRedrawEmitter,
+  ExtrudeVertOp,
 } from '@gametest/meshlib'
 import { redrawAll } from '../editors/redraw'
 
@@ -48,7 +51,8 @@ export abstract class MeshToolMode<
   }
 
   abstract get mesh(): Mesh | undefined
-  selectMask = MeshTypes.VERTEX
+  abstract readonly haveHandles: boolean
+  abstract selectMask: number
   mouseDown = false
   startMouseDown = new Vector2()
 
@@ -74,6 +78,16 @@ export abstract class MeshToolMode<
         }
       }
     }
+    if (type & MeshTypes.HANDLE) {
+      for (const h of mesh!.handles) {
+        const dist = h.co.vectorDistance(localMouse)
+        if (dist < limit && dist < mindist) {
+          mindist = dist
+          minElem = h
+        }
+      }
+    }
+
     const edgePad = 10 ** 2
     if (type & MeshTypes.EDGE) {
       for (const e of mesh!.edges) {
@@ -98,6 +112,35 @@ export abstract class MeshToolMode<
     return elem
   }
 
+  getKeyMaps(): KeyMap<CTX>[] {
+    if (this.keymaps === undefined) {
+      this.keymaps = [
+        new KeyMap<CTX>([
+          new HotKey('C', [], 'mesh.make_edge()'),
+          new HotKey('F', [], 'mesh.make_face()'),
+          new HotKey('X', [], 'mesh.delete()'),
+          new HotKey('Delete', [], 'mesh.delete()'),
+          new HotKey('A', [], `mesh.toggle_select_all(mode=${SelToolModes.ADD})`),
+          new HotKey('A', ['alt'], `mesh.toggle_select_all(mode=${SelToolModes.SUB})`),
+          new HotKey(
+            'A',
+            ['ctrl', 'shift'],
+            `mesh.toggle_select_all(mode=${SelToolModes.SUB})`,
+          ),
+          new HotKey('L', [], `mesh.select_linked(mode=${SelToolModes.ADD} pick=true)`),
+          new HotKey(
+            'L',
+            ['shift'],
+            `mesh.select_linked(mode=${SelToolModes.SUB} pick=true onlyElem=true)`,
+          ),
+          new HotKey('G', [], 'transform.translate()'),
+          new HotKey('S', [], 'transform.scale()'),
+          new HotKey('R', [], 'transform.rotate()'),
+        ]),
+      ]
+    }
+    return this.keymaps!
+  }
   updateHighlight(mpos: Vector2Like) {
     const elem = this.findHighlight(mpos)
     const mesh = this.mesh!
@@ -113,10 +156,11 @@ export abstract class MeshToolMode<
       return
     }
 
-    const elem = this.updateHighlight(this.ctx.canvas.getLocalMouse(e.x, e.y))
+    const co = this.ctx.canvas.getLocalMouse(e.x, e.y)
+    const elem = this.updateHighlight(co)
     this.mouseDown = eventWasMouseDown(e)
     if (this.mouseDown) {
-      this.startMouseDown.load(this.ctx.canvas.getLocalMouse(e.x, e.y))
+      this.startMouseDown.load(co)
     }
 
     if (elem) {
@@ -128,6 +172,11 @@ export abstract class MeshToolMode<
         selectMask: this.selectMask,
         setActive : true,
         unique    : !(e.shiftKey || e.ctrlKey || e.metaKey),
+      })
+    } else {
+      const tool = new ExtrudeVertOp<CTX>()
+      this.ctx!.api.execTool(this.ctx!, tool, {
+        co: new Vector3().load2(co),
       })
     }
   }
@@ -169,33 +218,89 @@ export abstract class MeshToolMode<
       g.fill()
     }
 
-    for (const e of mesh.edges) {
-      g.strokeStyle = color2css(getElemColor(mesh.edges, e))
-      g.beginPath()
-
-      g.moveTo(e.v1.co[0], e.v1.co[1])
-      g.lineTo(e.v2.co[0], e.v2.co[1])
-      g.stroke()
+    if (this.haveHandles) {
+      for (const h of mesh.handles) {
+        g.fillStyle = color2css(getElemColor(mesh.handles, h))
+        g.beginPath()
+        g.arc(h.co[0], h.co[1], s, 0, 2 * Math.PI)
+        g.fill()
+        g.strokeStyle = g.fillStyle
+        g.beginPath()
+        g.moveTo(h.co[0], h.co[1])
+        const v = h.owner.vertex(h)
+        g.lineTo(v.co[0], v.co[1])
+        g.stroke()
+      }
     }
 
-    for (const f of mesh.faces) {
-      const clr = new Vector4(getElemColor(mesh.faces, f))
-      clr[3] = 0.2
-      g.fillStyle = color2css(clr)
-      g.beginPath()
-      for (const list of f.lists) {
-        let first = true
-        for (const l of list) {
-          if (first) {
-            first = false
-            g.moveTo(l.next.v.co[0], l.next.v.co[1])
-          } else {
-            g.lineTo(l.next.v.co[0], l.next.v.co[1])
-          }
-        }
-        g.closePath()
+    if (this.haveHandles) {
+      for (const e of mesh.edges) {
+        g.strokeStyle = color2css(getElemColor(mesh.edges, e))
+        g.beginPath()
+
+        const a = e.v1.co
+        const b = e.h1!.co
+        const c = e.h2!.co
+        const d = e.v2.co
+
+        g.moveTo(a[0], a[1])
+        g.bezierCurveTo(b[0], b[1], c[0], c[1], d[0], d[1])
+        g.stroke()
       }
-      g.fill()
+    } else {
+      for (const e of mesh.edges) {
+        g.strokeStyle = color2css(getElemColor(mesh.edges, e))
+        g.beginPath()
+
+        g.moveTo(e.v1.co[0], e.v1.co[1])
+        g.lineTo(e.v2.co[0], e.v2.co[1])
+        g.stroke()
+      }
+    }
+
+    if (this.haveHandles) {
+      for (const f of mesh.faces) {
+        const clr = new Vector4(getElemColor(mesh.faces, f))
+        clr[3] = 0.2
+        g.fillStyle = color2css(clr)
+        g.beginPath()
+        for (const list of f.lists) {
+          let first = true
+          g.moveTo(list.l.v.co[0], list.l.v.co[1])
+          for (const l of list) {
+            g.bezierCurveTo(
+              l.h1.co[0],
+              l.h1.co[1],
+              l.h2.co[0],
+              l.h2.co[1],
+              l.next.v.co[0],
+              l.next.v.co[1],
+            )
+          }
+          g.closePath()
+        }
+        g.fill()
+      }
+    } else {
+      for (const f of mesh.faces) {
+        const clr = new Vector4(getElemColor(mesh.faces, f))
+        clr[3] = 0.2
+        g.fillStyle = color2css(clr)
+        g.beginPath()
+        for (const list of f.lists) {
+          let first = true
+          for (const l of list) {
+            if (first) {
+              first = false
+              g.moveTo(l.next.v.co[0], l.next.v.co[1])
+            } else {
+              g.lineTo(l.next.v.co[0], l.next.v.co[1])
+            }
+          }
+          g.closePath()
+        }
+        g.fill()
+      }
     }
   }
 

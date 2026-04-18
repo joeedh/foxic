@@ -183,7 +183,7 @@ export class TransformOp<
   Inputs extends PropertySlots = {},
   Outputs extends PropertySlots = {},
 > extends ToolOp<
-  Inputs & { selMask: FlagProperty; center: VecProperty; startMouse: Vec2Property },
+  Inputs & { selectMask: FlagProperty; center: VecProperty; startMouse: Vec2Property },
   Outputs,
   CTX
 > {
@@ -214,10 +214,19 @@ export class TransformOp<
     return {
       toolpath: '',
       inputs: {
-        selMask: new FlagProperty(config.SELECTMASK, MeshTypes),
-        center : new VecProperty(),
+        selectMask: new FlagProperty(config.SELECTMASK, MeshTypes),
+        center    : new VecProperty(),
+        startMouse: new Vec2Property(),
       },
     }
+  }
+
+  static invoke(ctx: MeshCtx, args: any) {
+    let tool = super.invoke(ctx, args)
+    if (!('selectMask' in args)) {
+      tool.inputs.selectMask.setValue(ctx.selectMask)
+    }
+    return tool
   }
 
   calcTransCenter(tdata: TransformData) {
@@ -246,7 +255,7 @@ export class TransformOp<
 
     let ret = []
     let mesh = ctx.mesh
-    let selMask = this.inputs.selMask.getValue()
+    let selMask = this.inputs.selectMask.getValue()
 
     for (let list of TransformClasses) {
       ret.push(list.create(mesh, selMask))
@@ -284,11 +293,11 @@ export class TransformOp<
 
   undoPre(ctx: CTX) {
     this._undo = {}
-    this._undoSelMask = this.inputs.selMask.getValue()
+    this._undoSelMask = this.inputs.selectMask.getValue()
 
     let tdata = this.getTransData(ctx)
 
-    let selMask = this.inputs.selMask.getValue()
+    let selMask = this.inputs.selectMask.getValue()
     let mesh = ctx.mesh
 
     for (let list of tdata) {
@@ -308,6 +317,10 @@ export class TransformOp<
     }
 
     mesh.regenRender()
+  }
+
+  on_pointerdown(e: PointerEvent) {
+    // preempt default modal end code
   }
 
   on_pointerup(e: PointerEvent) {
@@ -371,10 +384,9 @@ export class TranslateOp<
     return {
       uiname  : 'Move',
       toolpath: 'transform.translate',
-      inputs: ToolOp.inherit({
-        offset    : new VecProperty(),
-        startMouse: new Vec2Property(),
-      }),
+      inputs: {
+        offset: new VecProperty(),
+      },
       is_modal: true,
     }
   }

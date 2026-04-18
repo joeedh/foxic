@@ -1,6 +1,8 @@
 import {
   Container,
   DataAPI,
+  HotKey,
+  KeyMap,
   loadUIData,
   nstructjs,
   saveUIData,
@@ -352,6 +354,9 @@ export class CanvasEditor<CTX extends AppContext = AppContext> extends Editor<CT
     this.toolmode?.draw(this.ctx, this.canvas, this.g)
   }
 
+  getKeyMaps(): KeyMap<CTX>[] {
+    return ([] as KeyMap<CTX>[]).concat(this.toolmode?.getKeyMaps?.() ?? [])
+  }
   getGlobalMouse(x: number, y: number) {
     const pos = getglobaltemps.next()
     const r = this.canvas.getBoundingClientRect()

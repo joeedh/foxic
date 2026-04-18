@@ -3,10 +3,15 @@ import { MeshToolMode } from '@gametest/vis-tester-base/toolmode/toolmode_mesh'
 import { Icons } from '../assets/icon_enum'
 import { Container, loadFile, nstructjs } from 'path.ux'
 import type { TexGenContext } from './context'
+import { MeshTypes } from '@gametest/meshlib'
 
-// @ts-ignore — Type instantiation is excessively deep and possibly infinite.
+
+/** Vector curve mesh tool. */
+//@ts-ignore
 export class MeshTool extends MeshToolMode<TexGenContext> {
   image?: HTMLImageElement
+  readonly haveHandles = true
+  selectMask = MeshTypes.VERTEX | MeshTypes.HANDLE
 
   static STRUCT = nstructjs.inlineRegister(
     this,

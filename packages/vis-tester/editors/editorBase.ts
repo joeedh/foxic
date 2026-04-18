@@ -177,6 +177,8 @@ UIBase.register(EditorSideBar)
 
 export class Editor<CTX extends AppContext> extends Area<CTX> {
   declare container: Container<CTX>
+  /** notifications area */
+  declare noteArea: UIBase<CTX>
 
   static register(_cls: any, isInternal?: boolean): void {
     super.register(_cls, isInternal)
@@ -190,7 +192,12 @@ export class Editor<CTX extends AppContext> extends Area<CTX> {
     this.shadow.appendChild(this.container)
     this.container.ctx = this.ctx
     this.container._init()
-    this.header = this.makeHeader(this.container!)
+    this.header = this.makeHeader(this.container!, false)
+    if (this.noteArea) {
+      // move to end of header
+      this.noteArea.remove()
+      this.header.add(this.noteArea)
+    }
   }
 
   getScreen() {

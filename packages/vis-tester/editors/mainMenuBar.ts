@@ -7,6 +7,7 @@ import {
   Menu,
   AreaFlags,
   DataAPI,
+  Container,
 } from 'path.ux'
 import { Editor } from '.'
 import { AppContext } from '../core/context'
@@ -42,16 +43,9 @@ export class MainMenuBar<CTX extends AppContext = AppContext> extends Editor<CTX
     return ret
   }
 
-  init() {
-    super.init()
-
-    this.background = this.getDefault('AreaHeaderBG')
-
-    if (this.helppicker && !util.isMobile()) {
-      this.helppicker.iconsheet = 0
-    }
-
-    let header = this.header!
+  makeHeader(container: Container<CTX>, addNoteArea?: boolean, makeDraggable?: boolean) {
+    // put notifications area on main menu bar
+    const header = super.makeHeader(container, true, makeDraggable)
     let span = header.row()
 
     span
@@ -101,6 +95,17 @@ export class MainMenuBar<CTX extends AppContext = AppContext> extends Editor<CTX
         ],
       ])
       .playwrightId('menu-session')
+    return header
+  }
+
+  init() {
+    super.init()
+
+    this.background = this.getDefault<string>('AreaHeaderBG')
+
+    if (this.helppicker && !util.isMobile()) {
+      this.helppicker.iconsheet = 0
+    }
 
     this.setCSS()
   }

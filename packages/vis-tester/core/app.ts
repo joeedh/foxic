@@ -5,7 +5,6 @@ import {
   setBaseUnit,
   setIconManager,
   setMetric,
-  startEvents,
   ToolStack,
   UIBase,
   cconst,

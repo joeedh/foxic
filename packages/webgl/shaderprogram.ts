@@ -2,40 +2,76 @@ import { InsecureHashDigest } from '@gametest/utils'
 import { Texture } from './texture'
 import { VertexArrayTarget } from './vertexArray'
 
+function formatLines(str: string, log: string | null) {
+  const chunk = (log ?? '').match(/(\d+):(\d+)/)
+  let line: number | undefined
+  let col: number | undefined
+  if (chunk) {
+    line = parseInt(chunk[2])
+    col = parseInt(chunk[1])
+  }
+
+  const digits = Math.ceil(Math.log(str.split('\n').length) / Math.log(10))
+
+  const color = (s: string) => `\x1b[31m${s}\x1b[0m`
+  const color2 = (s: string) => `\x1b[33m${s}\x1b[0m`
+
+  const lines = str.split('\n').map((l, i) => {
+    let s = '' + Math.max(i + 1, 0)
+    while (s.length < digits) {
+      s += ' '
+    }
+
+    if (line === i + 1 && col) {
+      col += digits + 2
+      let l1 = l.slice(0, col)
+      let l2 = l.slice(col, col + 2)
+      let l3 = l.slice(col + 2)
+      return color(s + ': ' + l1) + color2(l2) + color(l3)
+    } else if (line === i + 1) {
+      return color(s + ': ' + l)
+    }
+    return s + ': ' + l
+  })
+
+  return lines.join('\n') + '\n' + (log ? color(log) : '')
+  //console.log(color('asdsadasd'))
+}
+
 export const GLType = {
-  Float: 0,
-  Byte: 1,
-  UByte: 2, //unsigned
-  Short: 3,
-  UShort: 4, //unsigned
-  Int: 5,
-  UInt: 6, //unsigned
-  Bool: 7,
-  Vec2: 8,
-  Vec3: 9,
-  Vec4: 10,
-  Mat2: 11,
-  Mat3: 12,
-  Mat4: 13,
+  Float    : 0,
+  Byte     : 1,
+  UByte    : 2, //unsigned
+  Short    : 3,
+  UShort   : 4, //unsigned
+  Int      : 5,
+  UInt     : 6, //unsigned
+  Bool     : 7,
+  Vec2     : 8,
+  Vec3     : 9,
+  Vec4     : 10,
+  Mat2     : 11,
+  Mat3     : 12,
+  Mat4     : 13,
   Sampler2D: 14,
   Sampler3D: 15,
 } as const
 
 export const typeElemSize = {
-  [GLType.Float]: 1,
-  [GLType.Vec2]: 2,
-  [GLType.Vec3]: 3,
-  [GLType.Vec4]: 4,
-  [GLType.Mat2]: 4,
-  [GLType.Mat3]: 9,
-  [GLType.Mat4]: 16,
-  [GLType.Bool]: 1,
-  [GLType.Byte]: 1,
-  [GLType.UByte]: 1,
-  [GLType.Short]: 2,
+  [GLType.Float] : 1,
+  [GLType.Vec2]  : 2,
+  [GLType.Vec3]  : 3,
+  [GLType.Vec4]  : 4,
+  [GLType.Mat2]  : 4,
+  [GLType.Mat3]  : 9,
+  [GLType.Mat4]  : 16,
+  [GLType.Bool]  : 1,
+  [GLType.Byte]  : 1,
+  [GLType.UByte] : 1,
+  [GLType.Short] : 2,
   [GLType.UShort]: 2,
-  [GLType.Int]: 4,
-  [GLType.UInt]: 4,
+  [GLType.Int]   : 4,
+  [GLType.UInt]  : 4,
 }
 
 export type ExtractEnumKeys<T extends { [k: string]: number }> = keyof {
@@ -45,13 +81,9 @@ export type ExtractEnumKeys<T extends { [k: string]: number }> = keyof {
 export type GLType = ExtractEnumKeys<typeof GLType>
 
 // attributes support all gl types other then texture samplers
-export type AttrType = ExtractEnumKeys<
-  Omit<typeof GLType, 'Sampler2D' | 'Sampler3D'>
->
+export type AttrType = ExtractEnumKeys<Omit<typeof GLType, 'Sampler2D' | 'Sampler3D'>>
 export const AttrType = Object.fromEntries(
-  Object.entries(GLType).filter(
-    (f) => f[0] !== 'Sampler2D' && f[0] !== 'Sampler3D',
-  ),
+  Object.entries(GLType).filter((f) => f[0] !== 'Sampler2D' && f[0] !== 'Sampler3D'),
 ) as unknown as typeof GLType
 
 /** Maps a GLType constant to its corresponding JavaScript value type. */
@@ -180,6 +212,7 @@ export class ShaderProgramBase<SDEF extends IShaderDef> {
     if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
       const log = gl.getShaderInfoLog(vs)
       gl.deleteShader(vs)
+      console.log(formatLines(this.shaderDef.vertexSource, log))
       throw new Error('Vertex shader: ' + log)
     }
 
@@ -190,6 +223,7 @@ export class ShaderProgramBase<SDEF extends IShaderDef> {
       const log = gl.getShaderInfoLog(fs)
       gl.deleteShader(vs)
       gl.deleteShader(fs)
+      console.log(formatLines(this.shaderDef.fragmentSource, log))
       throw new Error('Fragment shader: ' + log)
     }
 
@@ -308,15 +342,8 @@ export class ShaderProgramBase<SDEF extends IShaderDef> {
 
       const uniformDef = defs[name]
       const value =
-        (uniforms as Record<string, unknown> | undefined)?.[name] ??
-        uniformDef.default
-      this.setUniform(
-        gl,
-        name as keyof SDEF['uniforms'],
-        loc,
-        uniformDef.type,
-        value,
-      )
+        (uniforms as Record<string, unknown> | undefined)?.[name] ?? uniformDef.default
+      this.setUniform(gl, name as keyof SDEF['uniforms'], loc, uniformDef.type, value)
     }
   }
 
@@ -404,7 +431,7 @@ export class ShaderWithMacros<SDEF extends IShaderDef> {
     // Fork shader def with defines inserted after #version/precision lines
     const modifiedDef: IShaderDef = {
       ...this.shaderDef,
-      vertexSource: insertDefines(this.shaderDef.vertexSource, defineBlock),
+      vertexSource  : insertDefines(this.shaderDef.vertexSource, defineBlock),
       fragmentSource: insertDefines(this.shaderDef.fragmentSource, defineBlock),
     }
 

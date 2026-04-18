@@ -74,6 +74,9 @@ importers:
 
   packages/mesh:
     dependencies:
+      '@gametest/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20260414.1
         version: 7.0.0-dev.20260414.1
@@ -238,6 +241,9 @@ importers:
 
   packages/utils:
     dependencies:
+      '@gametest/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20260414.1
         version: 7.0.0-dev.20260414.1

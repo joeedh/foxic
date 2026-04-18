@@ -40,7 +40,7 @@ export class SelectOpBase<
       toolpath: '<select op base>',
       inputs: {
         mode      : new EnumProperty(SelToolModes.AUTO, SelToolModes),
-        selectMask: new FlagProperty(1 | 2 | 4 | 8 | 16, MeshTypes),
+        selectMask: new FlagProperty(0b11111, MeshTypes),
       },
     }
   }
@@ -211,9 +211,9 @@ export class ToggleSelectOp<CTX extends MeshCtx> extends SelectOpBase<
     return {
       uiname  : 'Select All/None',
       toolpath: 'mesh.toggle_select_all',
-      inputs: ToolOp.inherit({
+      inputs: {
         setActive: new BoolProperty(false),
-      }),
+      },
       outputs : ToolOp.inherit({}),
     }
   }

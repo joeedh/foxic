@@ -6,6 +6,7 @@ import {
   ILockableCtx,
   PropertySaver,
   SavedToolDefaults,
+  sendNote,
   toLockedImpl,
   ToolPropertyCache,
 } from 'path.ux'
@@ -41,6 +42,19 @@ export class AppContext<DataModelRoot = unknown, SettingsTempl extends ITemplate
   implements ILockableCtx
 {
   declare state: AppState<SettingsTempl, DataModelRoot>
+
+  /** 
+   * When making a value that isn't saved to the ctx during locking,
+   * create a save wrapper that uses this, e.g.
+   * 
+   * ```ts
+   * get graph() {}
+   * graph_save() {
+   *  return AppContext.NotLocked
+   * }
+   * ```
+   */
+  static NotLocked = '$notlocked$'
 
   static defineAPI(api: DataAPI) {
     const st = api.mapStruct(this)
@@ -142,6 +156,18 @@ export class AppContext<DataModelRoot = unknown, SettingsTempl extends ITemplate
 
   redrawAll() {
     redrawAll()
+  }
+
+  error(msg: string) {
+    sendNote(this.screen, msg, 'red')
+    console.error(msg)
+  }
+  warn(msg: string) {
+    sendNote(this.screen, msg, 'orange')
+    console.warn(msg)
+  }
+  report(msg: string) {
+    sendNote(this.screen, msg, 'green')
   }
 }
 

@@ -162,7 +162,7 @@ mesh.Handle {
   )
 
   co: Vector3
-  owner?: Edge
+  declare owner: Edge
 
   constructor(co: Vector3) {
     super(MeshTypes.HANDLE)
@@ -172,8 +172,6 @@ mesh.Handle {
     if (co !== undefined) {
       this.co.load(co)
     }
-
-    this.owner = undefined
   }
 
   get 0() {

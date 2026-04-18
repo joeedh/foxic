@@ -37,6 +37,7 @@ export abstract class ToolMode<CTX extends AppContext = AppContext> {
   )
   static readonly toolModeDef: Readonly<IToolModeDef>
 
+  keymaps?: KeyMap<CTX>[] 
   selectMask = 0
   ctx?: CTX
 

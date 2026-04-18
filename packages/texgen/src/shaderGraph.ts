@@ -1,16 +1,64 @@
-import { DataAPI, nstructjs } from 'path.ux'
+import { DataAPI, nstructjs, NumSlider, UIBase, Vector2, Vector4 } from 'path.ux'
 import { registerDataClass } from '@gametest/vis-tester-base/core/register'
+import { StructReader } from 'path.ux/scripts/util/nstructjs'
+import { TexGenContext } from './context'
+
+export type GlslType = 'bool' | 'int' | 'float' | 'vec2' | 'vec3' | 'vec4' | 'mat4'
+export class GraphCycleError extends Error {}
+
+export const NodeClasses: INodeConstructor[] = []
+
+enum SocketFlags {
+  None = 0,
+  /** Only one connection allowed */
+  Single = 1,
+}
+
+export class NumConstraints {
+  static STRUCT = nstructjs.inlineRegister(
+    this,
+    `
+  texgen.NumConstraints {
+    min           : float;
+    max           : float;
+    slideSpeed    : float;
+    slideExp      : float;
+    step          : float;
+    decimalPlaces : int;
+  }
+    `,
+  )
+
+  min = -10000
+  max = 10000
+  slideSpeed = 2.0
+  slideExp = 3.0
+  step = 0.01
+  decimalPlaces = 3
+
+  copyTo(b: this): this {
+    b.min = this.min
+    b.max = this.max
+    b.step = this.step
+    b.slideExp = this.slideExp
+    b.slideSpeed = this.slideSpeed
+    b.decimalPlaces = this.decimalPlaces
+    return this
+  }
+}
 
 // Sockets
 export abstract class NodeSocket<VALUE> {
   static STRUCT = nstructjs.inlineRegister(
     this,
     `texgen.NodeSocket {
-      name       : string;
-      type       : string;
-      socketType : string;
-      _edges     : iter(int) | this._saveEdges();
-      _id        : int;
+      name          : string;
+      type          : string;
+      socketType    : string;
+      _edges        : iter(int) | this._saveEdges();
+      _id           : int;
+      flag          : int;
+      numConstraints: texgen.NumConstraints;
     }`,
   )
 
@@ -21,15 +69,17 @@ export abstract class NodeSocket<VALUE> {
     return st
   }
 
+  numConstraints = new NumConstraints()
   name = ''
   type = ''
   value: VALUE
   edges: NodeSocket<any>[] = []
   socketType: 'input' | 'output' = 'input'
+  flag = 0
   _id = -1
 
   // node owning this socket — set by NodeBase constructor
-  node?: NodeBase<any>
+  node!: NodeBase<any>
 
   constructor(value: VALUE) {
     this.value = value
@@ -46,6 +96,13 @@ export abstract class NodeSocket<VALUE> {
     other.name = this.name
     other.type = this.type
     other.socketType = this.socketType
+    other.flag = this.flag
+    this.numConstraints.copyTo(other.numConstraints)
+    return this
+  }
+
+  single() {
+    this.flag |= SocketFlags.Single
     return this
   }
 
@@ -56,9 +113,24 @@ export abstract class NodeSocket<VALUE> {
     if (this.socketType === other.socketType) {
       throw new Error(`Cannot connect two ${this.socketType}s together`)
     }
+    if (this.flag & SocketFlags.Single) {
+      this.disconnectAll()
+    }
+    if (other.flag & SocketFlags.Single) {
+      other.disconnectAll()
+    }
+
     if (!this.edges.includes(other)) this.edges.push(other)
     if (!other.edges.includes(this)) other.edges.push(this)
+
     return this
+  }
+
+  disconnect(sock: NodeSocket<any>) {
+    const i = this.edges.indexOf(sock)
+    if (i >= 0) this.edges.splice(i, 1)
+    const j = sock.edges.indexOf(this)
+    if (j >= 0) sock.edges.splice(j, 1)
   }
 
   disconnectAll() {
@@ -76,13 +148,52 @@ export abstract class NodeSocket<VALUE> {
   loadSTRUCT(reader: nstructjs.StructReader<this>) {
     reader(this)
   }
+
+  /** load e.g. min, max ranges, etc from the default socket here */
+  afterSTRUCT(defaultSocket: this) {
+    defaultSocket.numConstraints.copyTo(this.numConstraints)
+    this.flag |= defaultSocket.flag & SocketFlags.Single
+  }
+
+  makeWidget(ctx: TexGenContext): UIBase<TexGenContext> | undefined {
+    return undefined
+  }
+
+  min(n: number) {
+    this.numConstraints.min = n
+    return this
+  }
+
+  max(n: number) {
+    this.numConstraints.max = n
+    return this
+  }
+
+  slideSpeed(n: number) {
+    this.numConstraints.slideSpeed = n
+    return this
+  }
+
+  slideExp(n: number) {
+    this.numConstraints.slideExp = n
+    return this
+  }
+
+  decimalPlaces(n: number) {
+    this.numConstraints.decimalPlaces = n
+    return this
+  }
+
+  step(n: number) {
+    this.numConstraints.step = n
+    return this
+  }
 }
 
 export class FloatSocket extends NodeSocket<number> {
   static STRUCT = nstructjs.inlineRegister(
     this,
-    nstructjs.inherit(this, NodeSocket, 'texgen.FloatSocket') +
-      `
+    `texgen.FloatSocket {
       value : float;
     }`,
   )
@@ -97,6 +208,24 @@ export class FloatSocket extends NodeSocket<number> {
 
   constructor(value?: number) {
     super(value ?? 0)
+  }
+
+  makeWidget(ctx: TexGenContext): UIBase<TexGenContext> | undefined {
+    const slider = UIBase.createElement('numslider-x') as NumSlider<TexGenContext>
+    slider.ctx = ctx
+    slider._init()
+    slider.setValue(this.value)
+    slider.onchange = (arg) => {
+      this.value = slider.value
+      slider.ctx.redrawAll()
+    }
+    const n = this.numConstraints
+    slider.setAttribute('min', '' + n.min)
+    slider.setAttribute('max', '' + n.max)
+    slider.setAttribute('slideSpeed', '' + n.slideSpeed)
+    slider.setAttribute('slideExp', '' + n.slideExp)
+    slider.setAttribute('decimalPlaces', '' + n.decimalPlaces)
+    return slider
   }
 }
 
@@ -205,6 +334,7 @@ export interface INodeDef {
 }
 
 export interface INodeConstructor {
+  new (): NodeBase<any>
   readonly nodeDef: INodeDef
 }
 
@@ -228,12 +358,24 @@ export abstract class NodeBase<CHILD extends INodeConstructor> {
   static STRUCT = nstructjs.inlineRegister(
     this,
     `texgen.NodeBase {
-      pos     : array(float);
+      pos     : vec2;
       _id     : int;
       _inputs : iter(abstract(texgen.NodeSocket)) | this._saveSockets(this.inputs);
       _outputs: iter(abstract(texgen.NodeSocket)) | this._saveSockets(this.outputs);
     }`,
   )
+
+  static register(cls: INodeConstructor) {
+    NodeClasses.push(cls)
+    registerDataClass(cls as any)
+    if (!nstructjs.isRegistered(cls)) {
+      throw new Error('Class not registered with nstructjs: ' + (cls as any).name)
+    }
+  }
+
+  static getClass(typeName: string) {
+    return NodeClasses.find((cls) => cls.nodeDef.typeName === typeName)
+  }
 
   static readonly nodeDef: INodeDef = {
     typeName   : 'BASE',
@@ -283,7 +425,7 @@ export abstract class NodeBase<CHILD extends INodeConstructor> {
     return st
   }
 
-  pos: [number, number] = [0, 0]
+  pos = new Vector2()
   _id = -1;
 
   declare readonly ['constructor']: CHILD
@@ -321,12 +463,20 @@ export abstract class NodeBase<CHILD extends INodeConstructor> {
     for (const s of inputs) {
       s.node = this
       s.socketType = 'input'
+      const defsock = this.inputs[s.name]
+      if (defsock) {
+        s.afterSTRUCT(defsock)
+      }
       inObj[s.name] = s
     }
     const outObj: Record<string, NodeSocket<any>> = {}
     for (const s of outputs) {
       s.node = this
       s.socketType = 'output'
+      const defsock = this.inputs[s.name]
+      if (defsock) {
+        s.afterSTRUCT(defsock)
+      }
       outObj[s.name] = s
     }
     anyThis.inputs = inObj
@@ -338,10 +488,7 @@ export abstract class NodeBase<CHILD extends INodeConstructor> {
 export class SdfInputNode<
   CHILD extends INodeConstructor = typeof SdfInputNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.SdfInputNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, `texgen.SdfInputNode {}`)
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'SDF_INPUT',
@@ -351,31 +498,27 @@ export class SdfInputNode<
     outputs    : { value: new FloatSocket() },
   }
 }
+NodeBase.register(SdfInputNode)
 
 export class OutputNode<
   CHILD extends INodeConstructor = typeof OutputNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.OutputNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, 'texgen.OutputNode {}')
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'OUTPUT',
     uiName     : 'Output',
     description: 'Final color output',
-    inputs     : { color: new FloatSocket() },
+    inputs     : { color: new FloatSocket().single() },
     outputs    : {},
   }
 }
+NodeBase.register(OutputNode)
 
 export class MultiplyNode<
   CHILD extends INodeConstructor = typeof MultiplyNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.MultiplyNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, `texgen.MultiplyNode {}`)
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'MULTIPLY',
@@ -385,14 +528,12 @@ export class MultiplyNode<
     outputs    : { value: new FloatSocket() },
   }
 }
+NodeBase.register(MultiplyNode)
 
 export class AddNode<
   CHILD extends INodeConstructor = typeof AddNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.AddNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, `texgen.AddNode {}`)
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'ADD',
@@ -402,14 +543,12 @@ export class AddNode<
     outputs    : { value: new FloatSocket() },
   }
 }
+NodeBase.register(AddNode)
 
 export class ThresholdNode<
   CHILD extends INodeConstructor = typeof ThresholdNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.ThresholdNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, `texgen.ThresholdNode {}`)
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'THRESHOLD',
@@ -423,10 +562,7 @@ export class ThresholdNode<
 export class MixNode<
   CHILD extends INodeConstructor = typeof MixNode,
 > extends NodeBase<CHILD> {
-  static STRUCT = nstructjs.inlineRegister(
-    this,
-    nstructjs.inherit(this, NodeBase, 'texgen.MixNode') + `}`,
-  )
+  static STRUCT = nstructjs.inlineRegister(this, `texgen.MixNode {}`)
   static readonly nodeDef = {
     ...NodeBase.nodeDef,
     typeName   : 'MIX',
@@ -440,24 +576,7 @@ export class MixNode<
     outputs    : { value: new FloatSocket() },
   }
 }
-
-export const NodeClasses: Array<INodeConstructor & { new (): NodeBase<any> }> = [
-  SdfInputNode,
-  OutputNode,
-  MultiplyNode,
-  AddNode,
-  ThresholdNode,
-  MixNode,
-]
-;[
-  NodeBase,
-  SdfInputNode,
-  OutputNode,
-  MultiplyNode,
-  AddNode,
-  ThresholdNode,
-  MixNode,
-].forEach((c) => registerDataClass(c as any, true))
+NodeBase.register(MixNode)
 
 // NodeGraph
 const VERT_SRC = `#version 300 es
@@ -477,11 +596,121 @@ export interface ICompiledShader {
   hash: number
 }
 
+export class GraphNodeList extends Array<NodeBase<any>> {
+  static STRUCT = nstructjs.inlineRegister(
+    this,
+    `
+    texgen.GraphNodeList {
+      highlight   : int | this.highlight?._id ?? -1;
+      active      : int | this.active?._id ?? -1;
+
+      this        : array(abstract(texgen.NodeBase));
+      selected    : iter(e, int) | e._id;
+    }`,
+  )
+
+  active?: NodeBase<any>
+  highlight?: NodeBase<any>
+  selected = new Set<NodeBase<any>>()
+  private nodeIdMap = new Map<number, NodeBase<any>>()
+  private socketIdMap = new Map<number, NodeSocket<any>>()
+
+  isSelected(node: NodeBase<any>) {
+    return this.selected.has(node)
+  }
+
+  push(...items: NodeBase<any>[]): number {
+    const result = super.push(...items)
+    if (this.nodeIdMap) {
+      for (const node of items) {
+        for (const socket of node.allSockets()) {
+          socket.node = node
+          this.socketIdMap.set(socket._id, socket)
+        }
+        this.nodeIdMap.set(node._id, node)
+      }
+    }
+    return result
+  }
+  remove(item: NodeBase<any>, suppressError?: boolean): void {
+    let i = this.indexOf(item)
+    if (i === -1) {
+      if (!suppressError) {
+        throw new Error('Item not found in array')
+      }
+      return
+    }
+    this.selected.delete(item)
+    super.splice(i, 1)
+    if (this.nodeIdMap) {
+      this.nodeIdMap.delete(item._id)
+    }
+  }
+  get(id: number): NodeBase<any> | undefined {
+    return this.nodeIdMap.get(id)
+  }
+  getSocket(id: number): NodeSocket<any> | undefined {
+    return this.socketIdMap.get(id)
+  }
+  setSelect(item: NodeBase<any>, state: boolean): void {
+    if (state) {
+      this.selected.add(item)
+    } else {
+      this.selected.delete(item)
+    }
+  }
+  clearSelection(): void {
+    this.selected.clear()
+  }
+  selectAll(): void {
+    for (const node of this) {
+      this.selected.add(node)
+    }
+  }
+
+  loadSTRUCT(reader: StructReader<this>) {
+    reader(this)
+    this.nodeIdMap = new Map()
+    for (const node of this) {
+      for (const socket of node.allSockets()) {
+        this.socketIdMap.set(socket._id, socket)
+      }
+      this.nodeIdMap.set(node._id, node)
+    }
+
+    for (const node of this) {
+      for (const socket of node.allSockets()) {
+        socket.node = node
+
+        const ids = (socket as any)._edges as number[] | undefined
+        socket.edges = []
+        if (ids) {
+          for (const id of ids) {
+            const o = this.getSocket(id)
+            if (o === undefined) {
+              console.warn(node, id, this)
+              throw new Error('deserialization error: no socket with id ' + id)
+            }
+            socket.edges.push(o)
+          }
+        }
+        delete (socket as any)._edges
+      }
+    }
+    const selectedIds = this.selected as unknown as number[]
+    this.selected = new Set(selectedIds.map((id) => this.nodeIdMap!.get(id)!))
+    this.highlight = this.nodeIdMap.get((this as any).highlight)
+    this.active = this.nodeIdMap.get((this as any).active)
+  }
+}
+
 export class NodeGraph {
   static STRUCT = nstructjs.inlineRegister(
     this,
     `texgen.NodeGraph {
-      nodes : iter(abstract(texgen.NodeBase));
+      nodes        : texgen.GraphNodeList;
+      _sockIdGen   : int;
+      _idGen       : int;
     }`,
   )
 
@@ -506,14 +735,17 @@ export class NodeGraph {
     })
     return st
   }
-  nodes: NodeBase<any>[] = []
-  private _idgen = 0
+
+  hasCycle = false
+  nodes = new GraphNodeList()
+
+  private _idGen = 0
   private _sockIdGen = 0
 
   constructor() {}
 
   addNode<T extends NodeBase<any>>(node: T): T {
-    node._id = this._idgen++
+    node._id = this._idGen++
     for (const s of node.allSockets()) {
       s._id = this._sockIdGen++
     }
@@ -530,28 +762,153 @@ export class NodeGraph {
   addDefaultNodes() {
     const sdf = this.addNode(new SdfInputNode())
     const out = this.addNode(new OutputNode())
-    sdf.pos = [40, 40]
-    out.pos = [240, 40]
+    sdf.pos.loadXY(40, 40)
+    out.pos.loadXY(240, 40)
     sdf.outputs.value.connect(out.inputs.color)
   }
 
   // simple coercion to float at compile time
-  private static coerceToFloat(srcType: string, expr: string): string {
+  private static coerceToFloat(srcType: GlslType, expr: string): string {
     switch (srcType) {
       case 'float':
+        return `(${expr})`
+      case 'bool':
       case 'int':
         return `float(${expr})`
       case 'vec2':
-        return `(${expr}).x`
       case 'vec3':
       case 'vec4':
-        return `(${expr}).r`
+        return `length(${expr})`
       default:
         return `float(${expr})`
     }
   }
+  private static coerceToInt(srcType: GlslType, expr: string): string {
+    switch (srcType) {
+      case 'bool':
+      case 'float':
+        return `int(${expr})`
+      case 'int':
+        return `(${expr})`
+      case 'vec2':
+      case 'vec3':
+      case 'vec4':
+        return `int(length(${expr}))`
+      default:
+        return `int(float(${expr}))`
+    }
+  }
+  private static coerceToVec2(srcType: GlslType, expr: string): string {
+    switch (srcType) {
+      case 'bool':
+      case 'float':
+      case 'int':
+        return `vec2(${expr}, ${expr})`
+      case 'vec2':
+        return `(${expr})`
+      case 'vec3':
+        return `(${expr}).xy`
+      case 'vec4':
+        return `(${expr}).xy`
+      default:
+        return `vec2(${expr})`
+    }
+  }
+  private static coerceToVec3(srcType: GlslType, expr: string): string {
+    switch (srcType) {
+      case 'bool':
+      case 'float':
+      case 'int':
+        return `vec3(${expr}, ${expr}, ${expr})`
+      case 'vec2':
+        return `vec3(${expr}, 0.0)`
+      case 'vec3':
+        return `(${expr})`
+      case 'vec4':
+        return `(${expr}).xyz`
+      default:
+        return `vec3(${expr})`
+    }
+  }
+  private static coerceToVec4(srcType: GlslType, expr: string): string {
+    switch (srcType) {
+      case 'bool':
+      case 'float':
+      case 'int':
+        return `vec4(${expr}, ${expr}, ${expr}, ${expr})`
+      case 'vec2':
+        return `vec4(${expr}, 0.0, 1.0)`
+      case 'vec3':
+        return `vec4(${expr}, 1.0)`
+      case 'vec4':
+        return `(${expr})`
+      default:
+        return `vec4(${expr})`
+    }
+  }
 
-  compile(): ICompiledShader {
+  private static coerce(expr: string, srcType: GlslType, dstType: GlslType) {
+    switch (dstType) {
+      case 'float':
+        return this.coerceToFloat(srcType, expr)
+      case 'int':
+        return this.coerceToInt(srcType, expr)
+      case 'vec2':
+        return this.coerceToVec2(srcType, expr)
+      default:
+        return expr
+    }
+  }
+
+  canConnect(sourceSocket: NodeSocket<any>, targetSocket: NodeSocket<any>): boolean {
+    if (sourceSocket.node === targetSocket.node) {
+      return false
+    }
+    if (sourceSocket.socketType === targetSocket.socketType) {
+      return false
+    }
+    if (sourceSocket.edges.includes(targetSocket)) {
+      return false
+    }
+
+    // check for cycles
+    sourceSocket.edges.push(targetSocket)
+    targetSocket.edges.push(sourceSocket)
+    const result = !this.checkForCycles()
+    sourceSocket.edges.pop()
+    targetSocket.edges.pop()
+
+    return result
+  }
+
+  checkForCycles() {
+    const visited = new WeakSet<NodeBase<any>>()
+    const cycleVisit = (node: NodeBase<any>) => {
+      if (visited.has(node)) {
+        return true
+      }
+
+      visited.add(node)
+      for (const k in node.inputs) {
+        const sock = node.inputs[k]
+        if (sock.connectedTo) {
+          if (cycleVisit(sock.connectedTo.node)) {
+            return true
+          }
+        }
+      }
+      visited.delete(node)
+      return false
+    }
+
+    for (const node of this.nodes) {
+      if (cycleVisit(node)) {
+        return true
+      }
+    }
+    return false
+  }
+  compile(onError = (msg: string) => console.error(msg)): ICompiledShader {
     // assign sequential ids
     let id = 0
     const nodeIds = new Map<NodeBase<any>, number>()
@@ -561,19 +918,56 @@ export class NodeGraph {
 
     // topological sort
     const sorted: NodeBase<any>[] = []
-    const visited = new Set<NodeBase<any>>()
+    const visited = new WeakSet<NodeBase<any>>()
+    const cycleVisited = new WeakSet<NodeBase<any>>()
+    this.hasCycle = false
+    const cycleVisit = (n: NodeBase<any>) => {
+      if (cycleVisited.has(n)) {
+        onError('cycle in shader graph!')
+        this.hasCycle = true
+        return
+      }
+
+      cycleVisited.add(n)
+      for (const k in n.inputs) {
+        const sock = n.inputs[k]
+        for (const o of sock.edges) {
+          if (o.node) cycleVisit(o.node)
+        }
+      }
+      cycleVisited.delete(n)
+    }
+
     const visit = (n: NodeBase<any>) => {
-      if (visited.has(n)) return
+      if (cycleVisited.has(n)) {
+        onError('cycle in shader graph!')
+        this.hasCycle = true
+        return
+      }
+      if (visited.has(n)) {
+        return
+      }
+
       visited.add(n)
+      cycleVisited.add(n)
       for (const k in n.inputs) {
         const sock = n.inputs[k]
         for (const o of sock.edges) {
           if (o.node) visit(o.node)
         }
       }
+      cycleVisited.delete(n)
       sorted.push(n)
     }
-    for (const n of this.nodes) visit(n)
+    for (const n of this.nodes) {
+      cycleVisit(n)
+    }
+    if (this.hasCycle) {
+      throw new GraphCycleError('cycle!')
+    }
+    for (const n of this.nodes) {
+      visit(n)
+    }
 
     // emit code
     const lines: string[] = []
@@ -649,27 +1043,6 @@ ${lines.join('\n')}
 
   loadSTRUCT(reader: nstructjs.StructReader<this>) {
     reader(this)
-
-    // rebuild socket connections from saved id arrays
-    const socketsById = new Map<number, NodeSocket<any>>()
-    for (const n of this.nodes) {
-      for (const s of n.allSockets()) {
-        socketsById.set(s._id, s)
-      }
-    }
-    for (const n of this.nodes) {
-      for (const s of n.allSockets()) {
-        const ids = (s as any)._edges as number[] | undefined
-        s.edges = []
-        if (ids) {
-          for (const id of ids) {
-            const o = socketsById.get(id)
-            if (o) s.edges.push(o)
-          }
-        }
-        delete (s as any)._edges
-      }
-    }
   }
 }
 
@@ -682,3 +1055,25 @@ function hashString(s: string): number {
 }
 
 registerDataClass(NodeGraph as any, true)
+
+const nodeColors = [
+  [0.2, 0.25, 0.3, 1], // unselected
+  [0.6, 0.65, 0.65, 1], // selected
+  [0.3, 0.35, 0.4, 1], // highlighted
+  [0.8, 0.85, 0.85, 1], // highlighted and selected
+].map((v) => new Vector4(v))
+
+export function getNodeColor(
+  node: NodeBase<any>,
+  isSelected: boolean,
+  isHighlight: boolean,
+  isActive: boolean,
+) {
+  let mask = 0
+  if (isSelected) mask |= 1
+  if (isHighlight) mask |= 2
+  //if (isActive) mask |= 4
+
+  // TODO: implement color logic based on mask
+  return nodeColors[mask]
+}
