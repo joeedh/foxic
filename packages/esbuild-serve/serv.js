@@ -106,8 +106,7 @@ async function startEsbuildServer({ entryFiles, outDir, port, configPath, served
     delete options.port
 
     if (!port) {
-      process.stderr.write('Port is required\n')
-      process.exit(1)
+      port = 5174
     }
     if (config.default.servedir) {
       servedir = config.default.servedir
